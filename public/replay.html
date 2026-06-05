@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Alien Hunt Replay</title>
+  <link rel="stylesheet" href="/replay.css" />
+</head>
+
+<body>
+  <main class="app">
+    <section id="setupView" class="panel">
+      <h1>Alien Hunt Replay</h1>
+      <p>Enter a completed hunt id to replay its grid snapshots.</p>
+
+      <form id="replayForm" class="hunt-form">
+        <input id="huntIdInput" name="huntId" type="text" placeholder="huntId" autocomplete="off" required />
+        <button type="submit">Replay</button>
+      </form>
+
+      <p id="setupMessage" class="message" role="status"></p>
+    </section>
+
+    <section id="replayView" class="panel hidden">
+      <div class="replay-header">
+        <div>
+          <h1>Replay</h1>
+          <p id="replayMeta" class="meta"></p>
+        </div>
+        <button id="cancelButton" type="button" class="secondary">Cancel</button>
+      </div>
+
+      <canvas id="replayCanvas" width="400" height="400"></canvas>
+
+      <div class="controls">
+        <button id="previousButton" type="button">Previous</button>
+        <button id="pauseButton" type="button">Pause</button>
+        <button id="nextButton" type="button">Next</button>
+        <button id="replayButton" type="button">Replay</button>
+      </div>
+
+      <p id="snapshotLabel" class="meta"></p>
+    </section>
+  </main>
+
+  <script src="/replay.js"></script>
+</body>
+
+</html>

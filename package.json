@@ -1,0 +1,19 @@
+{
+  "name": "alienhunt",
+  "version": "1.0.0",
+  "description": "A programming task that involves finding the right moment to shoot an alien predator.",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "play:circle:js": "node scripts/circle-player.js",
+    "play:circle:py": "python3 scripts/circle_player.py",
+    "start": "node src/server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "better-sqlite3": "^11.10.0",
+    "express": "^5.2.1"
+  }
+}

@@ -1,0 +1,145 @@
+:root {
+  color-scheme: dark;
+  --background: #090a0c;
+  --panel: #14171c;
+  --panel-border: #2a3038;
+  --text: #f2f5f7;
+  --muted: #9aa4af;
+  --accent: #8fd14f;
+  --danger: #e05252;
+  --box: #6f7782;
+  --empty: #1d2229;
+  --player: #55aaff;
+  --alien: #e05252;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: radial-gradient(
+    circle at top,
+    #1b2129 0,
+    var(--background) 42rem
+  );
+  color: var(--text);
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  border: 0;
+  border-radius: 0.5rem;
+  background: var(--accent);
+  color: #10140c;
+  cursor: pointer;
+  font-weight: 700;
+  padding: 0.75rem 1rem;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+button.secondary {
+  background: #303742;
+  color: var(--text);
+}
+
+input {
+  min-width: min(28rem, 100%);
+  border: 1px solid var(--panel-border);
+  border-radius: 0.5rem;
+  background: #0d1014;
+  color: var(--text);
+  padding: 0.75rem 1rem;
+}
+
+.app {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 1rem;
+}
+
+.panel {
+  width: min(44rem, 100%);
+  border: 1px solid var(--panel-border);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--panel), transparent 5%);
+  box-shadow: 0 1.5rem 4rem rgb(0 0 0 / 0.35);
+  padding: 1rem;
+}
+
+.hidden {
+  display: none;
+}
+
+.hunt-form,
+.controls,
+.replay-header {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.hunt-form {
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.replay-header {
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+h1 {
+  margin: 0 0 0.5rem;
+}
+
+p {
+  color: var(--muted);
+  margin: 0 0 1rem;
+}
+
+.message {
+  color: var(--danger);
+  min-height: 1.5rem;
+  margin-top: 1rem;
+}
+
+.meta {
+  color: var(--muted);
+  margin: 0;
+}
+
+canvas {
+  display: block;
+  width: min(100%, 520px, 70vh);
+  height: auto;
+  border: 1px solid var(--panel-border);
+  border-radius: 0.75rem;
+  background: var(--empty);
+  image-rendering: pixelated;
+  margin: 0 auto 0.75rem;
+}
+
+.controls {
+  justify-content: center;
+  margin-bottom: 0.75rem;
+}
