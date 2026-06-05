@@ -1,3 +1,9 @@
 node_modules/
 alien-hunt.sqlite
 alien-hunt.sqlite-*
+__pycache__/
+*.py[cod]
+.DS_Store
+*.log
+.env
+.env.*
