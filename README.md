@@ -4,7 +4,7 @@
 
 - A Xenomorph _(a deadly alien predator)_ heard your fall and is now coming to investigate the source of the sound.
 
-- The map is a `100x100` grid with 500 boxes that block both vision and movement. You are at the `50,50` position, and you have the map of the area _(so you know where all the boxes are)_.
+- The map is a `100x100` grid with 500 boxes that block both movement, vision and gunfire. You are at the `50,50` position, and you have the map of the area _(so you know where all the boxes are)_.
 
 - If the alien and you are ever on the same block _(square/space)_, the alien kills you instantly, and your hunt _(game session)_ ends with **defeat**.
 
@@ -16,7 +16,7 @@
 
 - All actions _(vision, movement, shooting)_ happen either horizontally or vertically, **no diagonals**. So the possible directions are always `'up'|'down'|'left'|'right'`.
 
-- You have a motion tracker that shows whether the alien is present in a certain direction, even if it is behind several boxes.
+- The alien has darkvision, you do not. You have a motion tracker though that shows whether the alien is present in a certain direction, even if it is behind several boxes.
 
 <br/>
 
