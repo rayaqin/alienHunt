@@ -38,6 +38,10 @@ app.get("/replay", (request, response) => {
   response.sendFile(path.join(publicPath, "replay.html"));
 });
 
+app.get("/hunt-history", (request, response) => {
+  response.sendFile(path.join(publicPath, "hunt-history.html"));
+});
+
 app.get("/health", (request, response) => {
   response.json({ ok: true });
 });

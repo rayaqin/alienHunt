@@ -4,8 +4,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Stats</title>
-  <link rel="stylesheet" href="/stats.css" />
+  <title>Hunt History</title>
+  <link rel="stylesheet" href="/hunt-history.css" />
 </head>
 
 <body>
@@ -13,10 +13,10 @@
     <header class="page-header">
       <div>
         <a class="back-link" href="/">Alien Hunt</a>
-        <h1>Stats</h1>
-        <p id="summaryText" class="meta">Loading persisted hunt stats...</p>
+        <h1>Hunt History</h1>
+        <p id="summaryText" class="meta">Loading hunt history...</p>
       </div>
-      <a class="button secondary" href="/replay">Replay</a>
+      <a class="button secondary" href="/replay">enter hunt id</a>
     </header>
 
     <section id="summaryCards" class="summary-grid" aria-label="Hunt summary"></section>
@@ -26,7 +26,7 @@
         <div>
           <h2>Hunts</h2>
         </div>
-        <button id="refreshButton" type="button">Refresh</button>
+        <button id="refreshButton" type="button">refresh</button>
       </div>
 
       <p id="message" class="message" role="status"></p>
@@ -46,13 +46,13 @@
               <th></th>
             </tr>
           </thead>
-          <tbody id="statsRows"></tbody>
+          <tbody id="historyRows"></tbody>
         </table>
       </div>
     </section>
   </main>
 
-  <script src="/stats.js"></script>
+  <script src="/hunt-history.js"></script>
 </body>
 
 </html>

@@ -12,9 +12,12 @@
   <main class="app">
     <section id="setupView" class="panel">
       <header class="setup-header">
-        <a class="back-link" href="/">Alien Hunt</a>
-        <h1>Replay</h1>
-        <p class="meta">Enter a completed hunt's id to replay its grid snapshots.</p>
+        <div>
+          <a class="back-link" href="/">Alien Hunt</a>
+          <h1>Replay</h1>
+          <p class="meta">Enter a completed hunt's id to replay its grid snapshots.</p>
+        </div>
+        <a class="button secondary" href="/hunt-history">hunt history</a>
       </header>
 
       <form id="replayForm" class="hunt-form">
@@ -37,6 +40,12 @@
       <canvas id="replayCanvas" width="400" height="400"></canvas>
 
       <div class="controls">
+        <select id="speedSelect">
+          <option value="150" selected>slow</option>
+          <option value="50">medium</option>
+          <option value="15">fast</option>
+          <option value="5">i am speed</option>
+        </select>
         <button id="previousButton" type="button">previous</button>
         <button id="pauseButton" type="button">pause</button>
         <button id="nextButton" type="button">next</button>

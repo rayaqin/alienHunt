@@ -1,4 +1,4 @@
-const AUTOPLAY_DELAY_MS = 5;
+const DEFAULT_AUTOPLAY_DELAY_MS = 150;
 const CELL_COLORS = {
   "#": "#6f7782",
   ".": "#1d2229",
@@ -29,11 +29,13 @@ const pauseButton = document.querySelector("#pauseButton");
 const nextButton = document.querySelector("#nextButton");
 const replayButton = document.querySelector("#replayButton");
 const cancelButton = document.querySelector("#cancelButton");
+const speedSelect = document.querySelector("#speedSelect");
 
 let snapshots = [];
 let currentIndex = 0;
 let autoplayTimer = null;
 let isPlaying = false;
+let autoplayDelayMs = DEFAULT_AUTOPLAY_DELAY_MS;
 
 replayForm.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -70,6 +72,15 @@ replayButton.addEventListener("click", () => {
   pause();
   drawSnapshot(0);
   play();
+});
+
+speedSelect.addEventListener("change", () => {
+  autoplayDelayMs = Number(speedSelect.value);
+
+  if (isPlaying) {
+    clearTimeout(autoplayTimer);
+    autoplayTimer = setTimeout(drawNextFrame, autoplayDelayMs);
+  }
 });
 
 cancelButton.addEventListener("click", () => {
@@ -134,7 +145,7 @@ function play() {
   updateControls();
   clearTimeout(autoplayTimer);
 
-  autoplayTimer = setTimeout(drawNextFrame, AUTOPLAY_DELAY_MS);
+  autoplayTimer = setTimeout(drawNextFrame, autoplayDelayMs);
 }
 
 function pause() {
@@ -156,7 +167,7 @@ function drawNextFrame() {
   }
 
   drawSnapshot(currentIndex + 1);
-  autoplayTimer = setTimeout(drawNextFrame, AUTOPLAY_DELAY_MS);
+  autoplayTimer = setTimeout(drawNextFrame, autoplayDelayMs);
 }
 
 function drawSnapshot(index) {

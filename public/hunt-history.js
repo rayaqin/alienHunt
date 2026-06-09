@@ -1,15 +1,15 @@
 const summaryCards = document.querySelector("#summaryCards");
 const summaryText = document.querySelector("#summaryText");
-const statsRows = document.querySelector("#statsRows");
+const historyRows = document.querySelector("#historyRows");
 const message = document.querySelector("#message");
 const refreshButton = document.querySelector("#refreshButton");
 
-refreshButton.addEventListener("click", loadStats);
+refreshButton.addEventListener("click", loadHuntHistory);
 
-loadStats();
+loadHuntHistory();
 
-async function loadStats() {
-  setMessage("Loading stats...");
+async function loadHuntHistory() {
+  setMessage("Loading hunt history...");
   refreshButton.disabled = true;
 
   try {
@@ -20,63 +20,63 @@ async function loadStats() {
     }
 
     const result = await response.json();
-    const stats = result.stats ?? [];
+    const hunts = result.stats ?? [];
 
-    renderSummary(stats);
-    renderRows(stats);
-    setMessage(stats.length === 0 ? "No hunts have been recorded yet." : "");
+    renderSummary(hunts);
+    renderRows(hunts);
+    setMessage(hunts.length === 0 ? "No hunts have been recorded yet." : "");
   } catch (error) {
-    setMessage(`Could not load stats: ${error.message}`, true);
+    setMessage(`Could not load hunt history: ${error.message}`, true);
   } finally {
     refreshButton.disabled = false;
   }
 }
 
-function renderSummary(stats) {
-  const completed = stats.filter((hunt) => hunt.outcome !== null);
-  const victories = stats.filter((hunt) => hunt.outcome === "victory");
-  const deaths = stats.filter((hunt) => hunt.outcome === "death");
-  const active = stats.length - completed.length;
-  const totalMoves = sum(stats, "moves");
-  const totalShots = sum(stats, "shots");
-  const totalTrackerUses = sum(stats, "motionTrackerUses");
+function renderSummary(hunts) {
+  const completed = hunts.filter((hunt) => hunt.outcome !== null);
+  const victories = hunts.filter((hunt) => hunt.outcome === "victory");
+  const deaths = hunts.filter((hunt) => hunt.outcome === "death");
+  const active = hunts.length - completed.length;
+  const totalMoves = sum(hunts, "moves");
+  const totalShots = sum(hunts, "shots");
+  const totalTrackerUses = sum(hunts, "motionTrackerUses");
 
   summaryText.textContent =
-    stats.length === 0
-      ? "No persisted hunt stats yet."
-      : `${stats.length} hunts recorded · ${completed.length} completed · ${active} unfinished`;
+    hunts.length === 0
+      ? "No persisted hunt history yet."
+      : `${hunts.length} hunts recorded · ${completed.length} completed · ${active} unfinished`;
 
   summaryCards.replaceChildren(
-    createSummaryCard("Hunts", stats.length),
+    createSummaryCard("Hunts", hunts.length),
     createSummaryCard("Victories", victories.length),
     createSummaryCard("Deaths", deaths.length),
     createSummaryCard(
       "Avg Actions",
-      formatAverage(totalMoves + totalShots + totalTrackerUses, stats.length),
+      formatAverage(totalMoves + totalShots + totalTrackerUses, hunts.length),
     ),
   );
 }
 
-function renderRows(stats) {
-  statsRows.replaceChildren();
+function renderRows(hunts) {
+  historyRows.replaceChildren();
 
-  if (stats.length === 0) {
+  if (hunts.length === 0) {
     const row = document.createElement("tr");
     const cell = document.createElement("td");
     cell.className = "empty";
     cell.colSpan = 9;
     cell.textContent = "Start a hunt to populate this table.";
     row.append(cell);
-    statsRows.append(row);
+    historyRows.append(row);
     return;
   }
 
-  for (const hunt of stats) {
-    statsRows.append(createStatsRow(hunt));
+  for (const hunt of hunts) {
+    historyRows.append(createHistoryRow(hunt));
   }
 }
 
-function createStatsRow(hunt) {
+function createHistoryRow(hunt) {
   const row = document.createElement("tr");
   row.append(
     createTextCell(hunt.huntId, "hunt-id"),
@@ -140,7 +140,7 @@ function createReplayCell(hunt) {
   const link = document.createElement("a");
   link.className = "row-link";
   link.href = `/replay?huntId=${encodeURIComponent(hunt.huntId)}`;
-  link.textContent = "Replay";
+  link.textContent = "replay";
   cell.append(link);
   return cell;
 }
@@ -182,12 +182,18 @@ function formatDate(value) {
     return "Unknown";
   }
 
-  return new Intl.DateTimeFormat(undefined, {
-    month: "numeric",
-    day: "numeric",
+  const date = new Date(value);
+  const month = new Intl.DateTimeFormat("en", { month: "short" })
+    .format(date)
+    .toLowerCase();
+  const day = date.getDate();
+  const time = new Intl.DateTimeFormat(undefined, {
     hour: "2-digit",
+    hour12: false,
     minute: "2-digit",
-  }).format(new Date(value));
+  }).format(date);
+
+  return `${month} ${day} - ${time}`;
 }
 
 function formatDuration(startedAt, endedAt) {
