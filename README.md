@@ -57,7 +57,7 @@ Completed hunts can be replayed at `http://localhost:2014/replay` by entering th
 
 ### `POST /start-hunt`
 
-Starts a new hunt, spawns the alien at a random available block, and sets the player's starting position as the alien's target destination. This endpoint accepts an optional JSON request body in the form `{ "difficulty": "easy" | "medium" | "hard" }`. If no difficulty is provided, the hunt starts on `easy`. **The docs describe the alien's behaviour on `easy` difficulty.**
+Starts a new hunt, puts the alien at a random available block that is at least 2 blocks away from the player, and sets the player's starting position as the alien's target destination. This endpoint accepts an optional JSON request body in the form `{ "difficulty": "easy" | "medium" | "hard" }`. If no difficulty is provided, the hunt starts on `easy`. **The docs describe the alien's behaviour on `easy` difficulty.**
 
 - `easy`: the alien is at a big disadvantage
 - `medium`: a clever strategy is needed
