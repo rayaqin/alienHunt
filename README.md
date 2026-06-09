@@ -1,6 +1,6 @@
 # Alien Hunt
 
-- You fell down a vertical ventillation shaft, into a completely dark storage room with locked doors.
+- You fell down a vertical ventilation shaft, into a completely dark storage room with locked doors.
 
 - A Xenomorph _(a deadly alien predator)_ heard your fall and is now coming to investigate the source of the sound.
 
@@ -10,7 +10,7 @@
 
 - You can move to 1 adjacent block at a time. Every time you move, the alien moves as well.
 
-- You have a powerful blaster gun that desintegrates any creature it hits, but it's rays are blocked by boxes. If you manage to **shoot the alien**, it dies, and your hunt ends with **victory**. Whenever you **miss a shot**, the alien selects the block **you shot from** as it's new destination _(unless your are in it's line of sight)_, and moves **1 block closer**.
+- You have a powerful blaster gun that disintegrates any creature it hits, but it's rays are blocked by boxes. If you manage to **shoot the alien**, it dies, and your hunt ends with **victory**. Whenever you **miss a shot**, the alien selects the block **you shot from** as it's new destination _(unless your are in it's line of sight)_, and moves **1 block closer**.
 
 - If you survive after the **alien** has **moved** 10000 times, it loses interest and leaves through a vent, and your hunt ends with **victory**.
 
@@ -57,7 +57,7 @@ Completed hunts can be replayed at `http://localhost:2014/replay` by entering th
 
 ### `POST /start-hunt`
 
-Starts a new hunt, and sets the player's starting position as the alien's target destination. This endpoint accepts an optional JSON request body in the form `{ "difficulty": "easy" | "medium" | "hard" }`. If no difficulty is provided, the hunt starts on `easy`. **The docs describe the alien's behaviour on `easy` difficulty.**
+Starts a new hunt, spawns the alien at a random available block, and sets the player's starting position as the alien's target destination. This endpoint accepts an optional JSON request body in the form `{ "difficulty": "easy" | "medium" | "hard" }`. If no difficulty is provided, the hunt starts on `easy`. **The docs describe the alien's behaviour on `easy` difficulty.**
 
 - `easy`: the alien is at a big disadvantage
 - `medium`: a clever strategy is needed

@@ -561,8 +561,8 @@ function getRandomOpenPosition(boxSet) {
     const position = getRandomPosition();
 
     if (
-      !samePosition(position, PLAYER_START) &&
-      isAvailable(position, boxSet)
+      isAvailable(position, boxSet) &&
+      getDistance(position, PLAYER_START) >= 2
     ) {
       return position;
     }
@@ -658,6 +658,10 @@ function isInBounds(position) {
 
 function samePosition(a, b) {
   return a.x === b.x && a.y === b.y;
+}
+
+function getDistance(a, b) {
+  return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 }
 
 function toPositionSet(positions) {
