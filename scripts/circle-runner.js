@@ -1,9 +1,4 @@
-const {
-  DELAY_MS,
-  DIRECTIONS,
-  movePlayer,
-  startHunt,
-} = require("./alien-hunt-client");
+const { DIRECTIONS, movePlayer, startHunt } = require("./alien-hunt-client");
 
 async function main() {
   const hunt = await startHunt();

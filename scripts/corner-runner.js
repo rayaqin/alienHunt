@@ -1,6 +1,4 @@
 const {
-  DELAY_MS,
-  DIRECTIONS,
   movePlayer,
   startHunt,
   getShortestRoute,

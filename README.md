@@ -57,7 +57,11 @@ Completed hunts can be replayed at `http://localhost:2014/replay` by entering th
 
 ### `POST /start-hunt`
 
-Starts a new hunt, and sets the player's starting position as the alien's target destination. This endpoint does not require a request body.
+Starts a new hunt, and sets the player's starting position as the alien's target destination. This endpoint accepts an optional JSON request body in the form `{ "difficulty": "easy" | "medium" | "hard" }`. If no difficulty is provided, the hunt starts on `easy`. **The docs describe the alien's behaviour on `easy` difficulty.**
+
+- `easy`: the alien is at a big disadvantage
+- `medium`: a clever strategy is needed
+- `hard`: survival without luck is a truly impressive feat
 
 Response:
 
@@ -65,6 +69,7 @@ Response:
 {
   huntId: string;
   boxes: Array<{ x: number; y: number }>;
+  difficulty: "easy" | "medium" | "hard";
   grid: Array<Array<"#" | "." | "P" | "A">>;
   state: "active" | "victory" | "death";
 }
@@ -91,7 +96,7 @@ Response:
 
 ### `POST /move-player`
 
-It allows the player to move to an available adjacent block. It accepts a JSON request body in the form `{ "huntId": string, "direction": "up" | "down" | "left" | "right" }`, and returns the player's new position. If the player tries to move to an unavailable block (wall or box), the endpoint returns the player's existing position.
+It allows the player to move to an available adjacent block. It accepts a JSON request body in the form `{ "huntId": string, "direction": "up" | "down" | "left" | "right" }`, and returns the player's new position. If the player tries to move to an unavailable block _(wall or box)_, the endpoint returns the player's existing position.
 
 Calling `POST /move-player` also **always makes the alien move**.
 
@@ -188,6 +193,6 @@ Calling any endpoint other than `POST /start-hunt` without a valid `huntId` shou
 
 ## Stats
 
-The backend records the number of moves, shots, and motion tracker uses for each hunt. It also persists a grid snapshot after each move or shot. When a hunt ends, the final outcome is saved as either `victory` or `death`.
+The backend records the selected difficulty, alien search strategy, number of moves, shots, and motion tracker uses for each hunt. It also persists a grid snapshot after each move or shot. When a hunt ends, the final outcome is saved as either `victory` or `death`.
 
 The `GET /stats` endpoint returns the persisted hunt stats.

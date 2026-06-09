@@ -13,6 +13,7 @@ db.exec(`
     ended_at TEXT,
     outcome TEXT,
     search_strategy TEXT,
+    difficulty TEXT,
     moves INTEGER NOT NULL DEFAULT 0,
     shots INTEGER NOT NULL DEFAULT 0,
     motion_tracker_uses INTEGER NOT NULL DEFAULT 0
@@ -20,6 +21,7 @@ db.exec(`
 `);
 
 ensureColumn("hunt_stats", "search_strategy", "TEXT");
+ensureColumn("hunt_stats", "difficulty", "TEXT");
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS hunt_snapshots (
@@ -41,8 +43,8 @@ db.exec(`
 `);
 
 const insertHunt = db.prepare(`
-  INSERT INTO hunt_stats (hunt_id, started_at, search_strategy)
-  VALUES (@huntId, @startedAt, @searchStrategy)
+  INSERT INTO hunt_stats (hunt_id, started_at, search_strategy, difficulty)
+  VALUES (@huntId, @startedAt, @searchStrategy, @difficulty)
 `);
 
 const incrementMoves = db.prepare(`
@@ -78,6 +80,7 @@ const getAllStats = db.prepare(`
     ended_at AS endedAt,
     outcome,
     search_strategy AS searchStrategy,
+    difficulty,
     moves,
     shots,
     motion_tracker_uses AS motionTrackerUses
@@ -92,6 +95,7 @@ const getStatsForHunt = db.prepare(`
     ended_at AS endedAt,
     outcome,
     search_strategy AS searchStrategy,
+    difficulty,
     moves,
     shots,
     motion_tracker_uses AS motionTrackerUses
@@ -137,10 +141,11 @@ const getSnapshotsForHunt = db.prepare(`
   ORDER BY sequence ASC
 `);
 
-function createStats(huntId, searchStrategy = null) {
+function createStats(huntId, searchStrategy = null, difficulty = null) {
   insertHunt.run({
     huntId,
     searchStrategy,
+    difficulty,
     startedAt: new Date().toISOString(),
   });
 }

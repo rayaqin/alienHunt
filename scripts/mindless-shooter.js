@@ -1,7 +1,7 @@
 const { DIRECTIONS, shoot, startHunt } = require("./alien-hunt-client");
 
 async function main() {
-  const hunt = await startHunt();
+  const hunt = await startHunt("medium");
   const { huntId } = hunt;
 
   console.log(`Started hunt ${huntId}`);

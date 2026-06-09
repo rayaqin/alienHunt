@@ -64,7 +64,7 @@ function renderRows(hunts) {
     const row = document.createElement("tr");
     const cell = document.createElement("td");
     cell.className = "empty";
-    cell.colSpan = 9;
+    cell.colSpan = 10;
     cell.textContent = "Start a hunt to populate this table.";
     row.append(cell);
     historyRows.append(row);
@@ -81,6 +81,7 @@ function createHistoryRow(hunt) {
   row.append(
     createTextCell(hunt.huntId, "hunt-id"),
     createBadgeCell(hunt.outcome),
+    createTextCell(formatDifficulty(hunt.difficulty)),
     createTextCell(formatStrategy(hunt.searchStrategy)),
     createTextCell(formatNumber(hunt.moves)),
     createTextCell(formatNumber(hunt.shots)),
@@ -175,6 +176,14 @@ function formatStrategy(value) {
     .split("-")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
+}
+
+function formatDifficulty(value) {
+  if (!value) {
+    return "Unknown";
+  }
+
+  return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
 function formatDate(value) {

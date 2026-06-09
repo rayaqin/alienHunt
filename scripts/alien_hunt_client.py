@@ -17,9 +17,10 @@ DELTAS = {
 DELAY_SECONDS = 0.1
 
 
-def start_hunt():
-    """Starts a new hunt. Params: none. Returns: { huntId, boxes, grid, state }."""
-    return post("/start-hunt")
+def start_hunt(difficulty=None):
+    """Starts a new hunt. Params: optional difficulty. Returns: { huntId, boxes, difficulty, grid, state }."""
+    body = None if difficulty is None else {"difficulty": difficulty}
+    return post("/start-hunt", body)
 
 
 def use_motion_tracker(hunt_id, direction):

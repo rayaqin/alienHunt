@@ -6,6 +6,7 @@ const DEFAULT_BOX_COUNT = 500;
 const ALIEN_MOVE_VICTORY_THRESHOLD = 10000;
 const SWEEP_LINE_STEP = 2;
 const DIRECTIONS = ["up", "down", "left", "right"];
+const DIFFICULTIES = ["easy", "medium", "hard"];
 const SEARCH_STRATEGIES = [
   "corner-search",
   "horizontal-sweep",
@@ -30,8 +31,13 @@ function isDirection(value) {
   return DIRECTIONS.includes(value);
 }
 
+function isDifficulty(value) {
+  return DIFFICULTIES.includes(value);
+}
+
 function createHunt(options = {}) {
   const boxCount = options.boxCount ?? DEFAULT_BOX_COUNT;
+  const difficulty = options.difficulty ?? "easy";
   const boxes = generateBoxes(boxCount);
   const boxSet = toPositionSet(boxes);
   const alienPosition = getRandomOpenPosition(boxSet);
@@ -47,6 +53,7 @@ function createHunt(options = {}) {
     alienPosition,
     alienTarget: { ...PLAYER_START },
     alienMoves: 0,
+    difficulty,
     alienSearchStrategy,
     alienSearchTarget: null,
     alienCornerSearchNextCornerIndex: 0,
@@ -84,7 +91,7 @@ function getMotionTrackerResult(hunt, direction) {
   );
 }
 
-function movePlayer(hunt, direction) {
+function movePlayer(hunt, direction, options = {}) {
   if (hunt.state !== "active") {
     return hunt.playerPosition;
   }
@@ -100,18 +107,12 @@ function movePlayer(hunt, direction) {
     return hunt.playerPosition;
   }
 
-  moveAlien(hunt);
-
-  if (samePosition(hunt.playerPosition, hunt.alienPosition)) {
-    endHunt(hunt, "death");
-  } else {
-    endHuntIfAlienMoveLimitReached(hunt);
-  }
+  triggerAlienMovement(hunt, options.alienMoveCount ?? 1);
 
   return hunt.playerPosition;
 }
 
-function shoot(hunt, direction) {
+function shoot(hunt, direction, options = {}) {
   if (hunt.state !== "active") {
     return false;
   }
@@ -124,14 +125,7 @@ function shoot(hunt, direction) {
   }
 
   hunt.alienTarget = { ...hunt.playerPosition };
-
-  moveAlien(hunt);
-
-  if (samePosition(hunt.playerPosition, hunt.alienPosition)) {
-    endHunt(hunt, "death");
-  } else {
-    endHuntIfAlienMoveLimitReached(hunt);
-  }
+  triggerAlienMovement(hunt, options.alienMoveCount ?? 1);
 
   return false;
 }
@@ -236,6 +230,22 @@ function moveAlien(hunt) {
   }
 
   searchForPlayer(hunt);
+}
+
+function triggerAlienMovement(hunt, moveCount = 1) {
+  for (
+    let index = 0;
+    index < moveCount && hunt.state === "active";
+    index += 1
+  ) {
+    moveAlien(hunt);
+
+    if (samePosition(hunt.playerPosition, hunt.alienPosition)) {
+      endHunt(hunt, "death");
+    } else {
+      endHuntIfAlienMoveLimitReached(hunt);
+    }
+  }
 }
 
 function endHuntIfAlienMoveLimitReached(hunt) {
@@ -664,7 +674,9 @@ module.exports = {
   getMotionTrackerResult,
   getShortestRoute,
   hasLineOfSight,
+  isDifficulty,
   isDirection,
   movePlayer,
   shoot,
+  triggerAlienMovement,
 };

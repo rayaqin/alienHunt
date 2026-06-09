@@ -17,9 +17,11 @@ const {
   getMotionTrackerResult,
   getShortestRoute,
   hasLineOfSight,
+  isDifficulty,
   isDirection,
   movePlayer,
   shoot,
+  triggerAlienMovement,
 } = require("./game");
 
 const PORT = process.env.PORT ?? 2014;
@@ -47,17 +49,26 @@ app.get("/health", (request, response) => {
 });
 
 app.post("/start-hunt", (request, response) => {
-  const hunt = createHunt();
+  const difficulty = request.body?.difficulty ?? "easy";
+
+  if (!isDifficulty(difficulty)) {
+    return response.status(400).json({
+      error: "difficulty must be one of: easy, medium, hard.",
+    });
+  }
+
+  const hunt = createHunt({ difficulty });
 
   hunts.set(hunt.huntId, hunt);
-  createStats(hunt.huntId, hunt.alienSearchStrategy);
+  createStats(hunt.huntId, hunt.alienSearchStrategy, hunt.difficulty);
   console.log(
-    `Hunt started: huntId=${hunt.huntId} searchStrategy=${hunt.alienSearchStrategy}`,
+    `Hunt started: huntId=${hunt.huntId} difficulty=${hunt.difficulty} searchStrategy=${hunt.alienSearchStrategy}`,
   );
 
   response.status(201).json({
     huntId: hunt.huntId,
     boxes: hunt.boxes,
+    difficulty: hunt.difficulty,
     grid: hunt.grid,
     state: hunt.state,
   });
@@ -82,7 +93,9 @@ app.post("/motion-tracker", (request, response) => {
       : false;
 
   if (hunt.state === "active") {
+    const previousState = hunt.state;
     recordMotionTrackerUse(hunt.huntId);
+    triggerAlienMovement(hunt, getMotionTrackerAlienMoveCount(hunt));
     recordSnapshot(
       hunt.huntId,
       "motion-tracker",
@@ -90,6 +103,7 @@ app.post("/motion-tracker", (request, response) => {
       hunt.state,
       createGridSnapshot(hunt),
     );
+    recordFinishedIfNeeded(hunt, previousState);
   }
 
   return response.json({
@@ -120,7 +134,9 @@ app.post("/move-player", (request, response) => {
 
   const previousState = hunt.state;
   recordMove(hunt.huntId);
-  const playerPosition = movePlayer(hunt, request.body.direction);
+  const playerPosition = movePlayer(hunt, request.body.direction, {
+    alienMoveCount: getAlienMoveCount(hunt),
+  });
   recordSnapshot(
     hunt.huntId,
     "move",
@@ -158,7 +174,9 @@ app.post("/shoot", (request, response) => {
 
   const previousState = hunt.state;
   recordShot(hunt.huntId);
-  const hit = shoot(hunt, request.body.direction);
+  const hit = shoot(hunt, request.body.direction, {
+    alienMoveCount: getAlienMoveCount(hunt),
+  });
   recordSnapshot(
     hunt.huntId,
     "shoot",
@@ -296,6 +314,18 @@ function parseCoordinate(value, name) {
   }
 
   return { value: numberValue };
+}
+
+function getAlienMoveCount(hunt) {
+  return hunt.difficulty === "hard" ? 2 : 1;
+}
+
+function getMotionTrackerAlienMoveCount(hunt) {
+  if (hunt.difficulty === "easy") {
+    return 0;
+  }
+
+  return getAlienMoveCount(hunt);
 }
 
 function recordFinishedIfNeeded(hunt, previousState) {

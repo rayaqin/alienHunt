@@ -6,11 +6,13 @@ const DELTAS = {
   left: { x: -1, y: 0 },
   up: { x: 0, y: -1 },
 };
-const DELAY_MS = 100;
 
-// Starts a new hunt. Params: none. Returns: { huntId, boxes, grid, state }.
-async function startHunt() {
-  return post("/start-hunt");
+// Starts a new hunt. Params: optional difficulty. Returns: { huntId, boxes, difficulty, grid, state }.
+async function startHunt(difficulty) {
+  return post(
+    "/start-hunt",
+    difficulty === undefined ? undefined : { difficulty },
+  );
 }
 
 // Checks one direction with the motion tracker. Params: huntId, direction. Returns: { detected, state }.
@@ -92,7 +94,6 @@ function writeGridToConsole(grid) {
 }
 
 module.exports = {
-  DELAY_MS,
   DIRECTIONS,
   DELTAS,
   getLineOfSight,
