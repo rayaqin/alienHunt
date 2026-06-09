@@ -151,8 +151,16 @@ select:focus {
 
 .replay-header {
   align-items: flex-start;
+  flex-wrap: wrap;
   justify-content: space-between;
   margin-bottom: 0.75rem;
+}
+
+.replay-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: flex-end;
 }
 
 .setup-header {
