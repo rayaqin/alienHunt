@@ -2,8 +2,22 @@ const { randomUUID } = require("node:crypto");
 
 const GRID_SIZE = 100;
 const PLAYER_START = { x: 50, y: 50 };
-const DEFAULT_BOX_COUNT = 800;
+const DEFAULT_BOX_COUNT = 500;
+const ALIEN_MOVE_VICTORY_THRESHOLD = 10000;
+const SWEEP_LINE_STEP = 2;
 const DIRECTIONS = ["up", "down", "left", "right"];
+const SEARCH_STRATEGIES = [
+  "corner-search",
+  "horizontal-sweep",
+  "vertical-sweep",
+];
+const CORNER_SEARCH_CORNERS = [
+  { x: 0, y: 0 },
+  { x: GRID_SIZE - 1, y: 0 },
+  { x: GRID_SIZE - 1, y: GRID_SIZE - 1 },
+  { x: 0, y: GRID_SIZE - 1 },
+];
+const RESERVED_BOX_POSITIONS = [PLAYER_START, ...CORNER_SEARCH_CORNERS];
 
 const DELTAS = {
   up: { x: 0, y: -1 },
@@ -21,6 +35,7 @@ function createHunt(options = {}) {
   const boxes = generateBoxes(boxCount);
   const boxSet = toPositionSet(boxes);
   const alienPosition = getRandomOpenPosition(boxSet);
+  const alienSearchStrategy = getRandomSearchStrategy();
   const grid = createGridMatrix(boxSet, PLAYER_START);
 
   return {
@@ -30,7 +45,15 @@ function createHunt(options = {}) {
     boxSet,
     playerPosition: { ...PLAYER_START },
     alienPosition,
-    alienTarget: null,
+    alienTarget: { ...PLAYER_START },
+    alienMoves: 0,
+    alienSearchStrategy,
+    alienSearchTarget: null,
+    alienCornerSearchNextCornerIndex: 0,
+    alienCornerSearchReturningToCenter: false,
+    alienSweepLineIndex: 0,
+    alienSweepForward: true,
+    alienSweepTargetPhase: "line-start",
     state: "active",
   };
 }
@@ -81,6 +104,8 @@ function movePlayer(hunt, direction) {
 
   if (samePosition(hunt.playerPosition, hunt.alienPosition)) {
     endHunt(hunt, "death");
+  } else {
+    endHuntIfAlienMoveLimitReached(hunt);
   }
 
   return hunt.playerPosition;
@@ -104,13 +129,18 @@ function shoot(hunt, direction) {
 
   if (samePosition(hunt.playerPosition, hunt.alienPosition)) {
     endHunt(hunt, "death");
+  } else {
+    endHuntIfAlienMoveLimitReached(hunt);
   }
 
   return false;
 }
 
-function getShortestRoute(hunt, start, target) {
-  if (!isAvailable(start, hunt.boxSet) || !isAvailable(target, hunt.boxSet)) {
+function getShortestRoute(hunt, start, target, allowUnavailableTarget = false) {
+  if (
+    !isAvailable(start, hunt.boxSet) ||
+    (!allowUnavailableTarget && !isAvailable(target, hunt.boxSet))
+  ) {
     return [];
   }
 
@@ -187,6 +217,8 @@ function endHunt(hunt, state) {
 }
 
 function moveAlien(hunt) {
+  hunt.alienMoves += 1;
+
   if (hasLineOfSight(hunt, hunt.alienPosition, hunt.playerPosition)) {
     hunt.alienTarget = { ...hunt.playerPosition };
     moveAlienToward(hunt, hunt.playerPosition);
@@ -203,7 +235,16 @@ function moveAlien(hunt) {
     return;
   }
 
-  moveAlienRandomly(hunt);
+  searchForPlayer(hunt);
+}
+
+function endHuntIfAlienMoveLimitReached(hunt) {
+  if (
+    hunt.state === "active" &&
+    hunt.alienMoves >= ALIEN_MOVE_VICTORY_THRESHOLD
+  ) {
+    endHunt(hunt, "victory");
+  }
 }
 
 function moveAlienToward(hunt, target) {
@@ -228,6 +269,157 @@ function moveAlienRandomly(hunt) {
   const direction =
     availableDirections[Math.floor(Math.random() * availableDirections.length)];
   hunt.alienPosition = getNextPosition(hunt.alienPosition, direction);
+}
+
+function searchForPlayer(hunt) {
+  if (hunt.alienSearchStrategy === "corner-search") {
+    moveAlienWithCornerSearch(hunt);
+    return;
+  }
+
+  if (hunt.alienSearchStrategy === "horizontal-sweep") {
+    moveAlienWithSweep(hunt, "horizontal");
+    return;
+  }
+
+  if (hunt.alienSearchStrategy === "vertical-sweep") {
+    moveAlienWithSweep(hunt, "vertical");
+    return;
+  }
+
+  moveAlienRandomly(hunt);
+}
+
+function moveAlienWithCornerSearch(hunt) {
+  if (
+    !hunt.alienSearchTarget ||
+    samePosition(hunt.alienPosition, hunt.alienSearchTarget)
+  ) {
+    hunt.alienSearchTarget = getNextCornerSearchTarget(hunt);
+  }
+
+  const route = getShortestRoute(
+    hunt,
+    hunt.alienPosition,
+    hunt.alienSearchTarget,
+  );
+
+  if (route.length === 0) {
+    moveAlienRandomly(hunt);
+    return;
+  }
+
+  hunt.alienPosition = getNextPosition(hunt.alienPosition, route[0]);
+}
+
+function getNextCornerSearchTarget(hunt) {
+  if (hunt.alienCornerSearchReturningToCenter) {
+    hunt.alienCornerSearchReturningToCenter = false;
+    return { ...PLAYER_START };
+  }
+
+  const target = CORNER_SEARCH_CORNERS[hunt.alienCornerSearchNextCornerIndex];
+  hunt.alienCornerSearchNextCornerIndex =
+    (hunt.alienCornerSearchNextCornerIndex + 1) % CORNER_SEARCH_CORNERS.length;
+  hunt.alienCornerSearchReturningToCenter = true;
+
+  return { ...target };
+}
+
+function moveAlienWithSweep(hunt, orientation) {
+  if (!ensureSweepTarget(hunt, orientation)) {
+    moveAlienRandomly(hunt);
+    return;
+  }
+
+  const route = getShortestRoute(
+    hunt,
+    hunt.alienPosition,
+    hunt.alienSearchTarget,
+  );
+
+  if (route.length > 0) {
+    hunt.alienPosition = getNextPosition(hunt.alienPosition, route[0]);
+    return;
+  }
+
+  moveAlienRandomly(hunt);
+}
+
+function ensureSweepTarget(hunt, orientation) {
+  for (let attempts = 0; attempts < GRID_SIZE * 2; attempts += 1) {
+    if (
+      hunt.alienSearchTarget &&
+      !samePosition(hunt.alienPosition, hunt.alienSearchTarget)
+    ) {
+      return true;
+    }
+
+    hunt.alienSearchTarget = getNextSweepTarget(hunt, orientation);
+  }
+
+  return false;
+}
+
+function getNextSweepTarget(hunt, orientation) {
+  if (hunt.alienSweepLineIndex >= GRID_SIZE) {
+    hunt.alienSweepLineIndex = 0;
+    hunt.alienSweepForward = true;
+    hunt.alienSweepTargetPhase = "line-start";
+  }
+
+  while (hunt.alienSweepLineIndex < GRID_SIZE) {
+    const target = getSweepTargetForCurrentLine(hunt, orientation);
+
+    if (target) {
+      return target;
+    }
+
+    advanceSweepLine(hunt);
+  }
+
+  return null;
+}
+
+function getSweepTargetForCurrentLine(hunt, orientation) {
+  const isLineStart = hunt.alienSweepTargetPhase === "line-start";
+  const side = isLineStart === hunt.alienSweepForward ? "low" : "high";
+  const target = getSweepLineEndpoint(
+    hunt,
+    orientation,
+    hunt.alienSweepLineIndex,
+    side,
+  );
+
+  if (hunt.alienSweepTargetPhase === "line-start") {
+    hunt.alienSweepTargetPhase = "line-end";
+  } else {
+    advanceSweepLine(hunt);
+  }
+
+  return target;
+}
+
+function advanceSweepLine(hunt) {
+  hunt.alienSweepLineIndex += SWEEP_LINE_STEP;
+  hunt.alienSweepForward = !hunt.alienSweepForward;
+  hunt.alienSweepTargetPhase = "line-start";
+}
+
+function getSweepLineEndpoint(hunt, orientation, lineIndex, side) {
+  for (let offset = 0; offset < GRID_SIZE; offset += 1) {
+    const crossAxis = side === "low" ? offset : GRID_SIZE - 1 - offset;
+    const position =
+      orientation === "horizontal"
+        ? { x: crossAxis, y: lineIndex }
+        : { x: lineIndex, y: crossAxis };
+
+    if (isAvailable(position, hunt.boxSet)) {
+      return position;
+    }
+  }
+
+  return null;
 }
 
 function isAlienInShotLine(hunt, direction) {
@@ -281,7 +473,12 @@ function generateBoxes(targetCount) {
     const candidate = getRandomPosition();
     const candidateKey = toKey(candidate);
 
-    if (samePosition(candidate, PLAYER_START) || boxSet.has(candidateKey)) {
+    if (
+      RESERVED_BOX_POSITIONS.some((position) =>
+        samePosition(candidate, position),
+      ) ||
+      boxSet.has(candidateKey)
+    ) {
       continue;
     }
 
@@ -367,6 +564,26 @@ function getRandomPosition() {
     x: Math.floor(Math.random() * GRID_SIZE),
     y: Math.floor(Math.random() * GRID_SIZE),
   };
+}
+
+function getRandomSearchStrategy() {
+  return getRandomItem(SEARCH_STRATEGIES);
+}
+
+function getInitialSearchDirection(searchStrategy) {
+  if (searchStrategy === "horizontal-sweep") {
+    return getRandomItem(["left", "right"]);
+  }
+
+  if (searchStrategy === "vertical-sweep") {
+    return getRandomItem(["up", "down"]);
+  }
+
+  return null;
+}
+
+function getRandomItem(items) {
+  return items[Math.floor(Math.random() * items.length)];
 }
 
 function getNextPosition(position, direction) {

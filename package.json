@@ -5,8 +5,6 @@
   "main": "src/server.js",
   "scripts": {
     "dev": "node --watch src/server.js",
-    "play:circle:js": "node scripts/circle-player.js",
-    "play:circle:py": "python3 scripts/circle_player.py",
     "start": "node src/server.js"
   },
   "keywords": [],

@@ -31,7 +31,7 @@ app.use(express.json());
 app.use(express.static(publicPath));
 
 app.get("/", (request, response) => {
-  response.type("text").send("The Xenomorph can smell your fear.");
+  response.sendFile(path.join(publicPath, "index.html"));
 });
 
 app.get("/replay", (request, response) => {
@@ -46,7 +46,10 @@ app.post("/start-hunt", (request, response) => {
   const hunt = createHunt();
 
   hunts.set(hunt.huntId, hunt);
-  createStats(hunt.huntId);
+  createStats(hunt.huntId, hunt.alienSearchStrategy);
+  console.log(
+    `Hunt started: huntId=${hunt.huntId} searchStrategy=${hunt.alienSearchStrategy}`,
+  );
 
   response.status(201).json({
     huntId: hunt.huntId,
@@ -294,6 +297,7 @@ function parseCoordinate(value, name) {
 function recordFinishedIfNeeded(hunt, previousState) {
   if (previousState === "active" && hunt.state !== "active") {
     recordFinishedHunt(hunt.huntId, hunt.state);
+    console.log(`Hunt completed: huntId=${hunt.huntId} outcome=${hunt.state}`);
   }
 }
 

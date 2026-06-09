@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Stats</title>
+  <link rel="stylesheet" href="/stats.css" />
+</head>
+
+<body>
+  <main class="app">
+    <header class="page-header">
+      <div>
+        <a class="back-link" href="/">Alien Hunt</a>
+        <h1>Stats</h1>
+        <p id="summaryText" class="meta">Loading persisted hunt stats...</p>
+      </div>
+      <a class="button secondary" href="/replay">Replay</a>
+    </header>
+
+    <section id="summaryCards" class="summary-grid" aria-label="Hunt summary"></section>
+
+    <section class="panel">
+      <div class="panel-header">
+        <div>
+          <h2>Hunts</h2>
+        </div>
+        <button id="refreshButton" type="button">Refresh</button>
+      </div>
+
+      <p id="message" class="message" role="status"></p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Hunt ID</th>
+              <th>Outcome</th>
+              <th>Strategy</th>
+              <th>Moves</th>
+              <th>Shots</th>
+              <th>Tracker Uses</th>
+              <th>Duration</th>
+              <th>Started</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="statsRows"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="/stats.js"></script>
+</body>
+
+</html>

@@ -2,9 +2,7 @@ const {
   DELAY_MS,
   DIRECTIONS,
   movePlayer,
-  shoot,
   startHunt,
-  wait,
 } = require("./alien-hunt-client");
 
 async function main() {
@@ -17,17 +15,8 @@ async function main() {
   let step = 0;
   let state = hunt.state;
 
-  const shootResult = await shoot(huntId, "up");
-  if (shootResult.hit) {
-    console.log("Somehow that worked. The alien is dead.");
-    return;
-  }
-  console.log("Shoot missed. The alien heard you.");
-
   while (state !== "death") {
     const direction = DIRECTIONS[step % DIRECTIONS.length];
-
-    await wait(DELAY_MS);
 
     const result = await movePlayer(huntId, direction);
     step += 1;

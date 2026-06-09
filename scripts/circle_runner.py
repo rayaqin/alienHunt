@@ -1,6 +1,6 @@
 import sys
 
-from alien_hunt_client import DELAY_SECONDS, DIRECTIONS, move_player, shoot, start_hunt, wait
+from alien_hunt_client import DIRECTIONS, move_player, start_hunt
 
 
 def main():
@@ -13,16 +13,8 @@ def main():
     step = 0
     state = hunt["state"]
 
-    shoot_result = shoot(hunt_id, "up")
-    if shoot_result["hit"]:
-        print("Somehow that worked. The alien is dead.")
-        return
-    print("Shoot missed. The alien heard you.")
-
     while state != "death":
         direction = DIRECTIONS[step % len(DIRECTIONS)]
-
-        wait(DELAY_SECONDS)
 
         result = move_player(hunt_id, direction)
         step += 1

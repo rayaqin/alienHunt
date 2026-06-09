@@ -1,4 +1,4 @@
-const AUTOPLAY_DELAY_MS = 30;
+const AUTOPLAY_DELAY_MS = 5;
 const CELL_COLORS = {
   "#": "#6f7782",
   ".": "#1d2229",
@@ -18,6 +18,7 @@ const setupView = document.querySelector("#setupView");
 const replayView = document.querySelector("#replayView");
 const replayForm = document.querySelector("#replayForm");
 const huntIdInput = document.querySelector("#huntIdInput");
+const loadReplayButton = document.querySelector("#loadReplayButton");
 const setupMessage = document.querySelector("#setupMessage");
 const replayMeta = document.querySelector("#replayMeta");
 const snapshotLabel = document.querySelector("#snapshotLabel");
@@ -81,6 +82,13 @@ cancelButton.addEventListener("click", () => {
   huntIdInput.focus();
 });
 
+const initialHuntId = new URLSearchParams(window.location.search).get("huntId");
+
+if (initialHuntId) {
+  huntIdInput.value = initialHuntId;
+  loadReplay(initialHuntId);
+}
+
 async function loadReplay(huntId) {
   showSetupMessage("");
   setFormEnabled(false);
@@ -122,7 +130,7 @@ function play() {
   }
 
   isPlaying = true;
-  pauseButton.textContent = "Pause";
+  pauseButton.textContent = "pause";
   updateControls();
   clearTimeout(autoplayTimer);
 
@@ -131,7 +139,7 @@ function play() {
 
 function pause() {
   isPlaying = false;
-  pauseButton.textContent = "Play";
+  pauseButton.textContent = "play";
   clearTimeout(autoplayTimer);
   autoplayTimer = null;
   updateControls();
@@ -286,5 +294,6 @@ function showSetupMessage(message) {
 
 function setFormEnabled(enabled) {
   huntIdInput.disabled = !enabled;
-  replayForm.querySelector("button").disabled = !enabled;
+  loadReplayButton.disabled = !enabled;
+  loadReplayButton.textContent = enabled ? "replay" : "preparing...";
 }
