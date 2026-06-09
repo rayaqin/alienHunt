@@ -2,13 +2,13 @@
 
 - You fell down a vertical ventillation shaft, into a completely dark storage room with locked doors.
 
-- A Xenomorph _(a deadly alien predator)_ heard your fall and is now hunting you.
+- A Xenomorph _(a deadly alien predator)_ heard your fall and is now coming to investigate the source of the sound.
 
 - The map is a `100x100` grid with 500 boxes that block both vision and movement. You are at the `50,50` position, and you have the map of the area _(so you know where all the boxes are)_.
 
 - If the alien and you are ever on the same block _(square/space)_, the alien kills you instantly, and your hunt _(game session)_ ends with **defeat**.
 
-- You can move to 1 adjacent block at a time. Every time you move, the alien moves as well. It heard you fall down, and it is coming.
+- You can move to 1 adjacent block at a time. Every time you move, the alien moves as well.
 
 - You have a powerful blaster gun that desintegrates any creature it hits, but it's rays are blocked by boxes. If you manage to **shoot the alien**, it dies, and your hunt ends with **victory**. Whenever you **miss a shot**, the alien selects the block **you shot from** as it's new destination _(unless your are in it's line of sight)_, and moves **1 block closer**.
 
