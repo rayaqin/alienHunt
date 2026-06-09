@@ -1,5 +1,4 @@
 const summaryCards = document.querySelector("#summaryCards");
-const summaryText = document.querySelector("#summaryText");
 const historyRows = document.querySelector("#historyRows");
 const message = document.querySelector("#message");
 const refreshButton = document.querySelector("#refreshButton");
@@ -40,11 +39,6 @@ function renderSummary(hunts) {
   const totalMoves = sum(hunts, "moves");
   const totalShots = sum(hunts, "shots");
   const totalTrackerUses = sum(hunts, "motionTrackerUses");
-
-  summaryText.textContent =
-    hunts.length === 0
-      ? "No persisted hunt history yet."
-      : `${hunts.length} hunts recorded · ${completed.length} completed · ${active} unfinished`;
 
   summaryCards.replaceChildren(
     createSummaryCard("Hunts", hunts.length),
@@ -202,7 +196,7 @@ function formatDate(value) {
     minute: "2-digit",
   }).format(date);
 
-  return `${month} ${day} - ${time}`;
+  return `${month} ${day} ${time}`;
 }
 
 function formatDuration(startedAt, endedAt) {
