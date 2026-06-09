@@ -25,32 +25,32 @@ def start_hunt(difficulty=None):
 
 def use_motion_tracker(hunt_id, direction):
     """Checks one direction with the motion tracker. Params: hunt_id, direction. Returns: { detected, state }."""
-    return post("/motion-tracker", {"huntId": hunt_id, "direction": direction})
+    return post(f"/hunt/{hunt_id}/use-motion-tracker", {"direction": direction})
 
 
 def move_player(hunt_id, direction):
     """Moves the player one step if possible. Params: hunt_id, direction. Returns: { playerPosition, state }."""
-    return post("/move-player", {"huntId": hunt_id, "direction": direction})
+    return post(f"/hunt/{hunt_id}/move-player", {"direction": direction})
 
 
 def shoot(hunt_id, direction):
     """Shoots in one direction. Params: hunt_id, direction. Returns: { hit, state }."""
-    return post("/shoot", {"huntId": hunt_id, "direction": direction})
+    return post(f"/hunt/{hunt_id}/shoot", {"direction": direction})
 
 
 def get_shortest_route(hunt_id, a_x, a_y, b_x, b_y):
     """Finds a shortest path from A to B. Params: hunt_id, a_x, a_y, b_x, b_y. Returns: { path, state }."""
     return get(
-        "/shortest-route",
-        {"huntId": hunt_id, "aX": a_x, "aY": a_y, "bX": b_x, "bY": b_y},
+        f"/hunt/{hunt_id}/shortest-route",
+        {"aX": a_x, "aY": a_y, "bX": b_x, "bY": b_y},
     )
 
 
 def get_line_of_sight(hunt_id, a_x, a_y, b_x, b_y):
     """Checks whether A can see B. Params: hunt_id, a_x, a_y, b_x, b_y. Returns: { lineOfSightClear, state }."""
     return get(
-        "/line-of-sight",
-        {"huntId": hunt_id, "aX": a_x, "aY": a_y, "bX": b_x, "bY": b_y},
+        f"/hunt/{hunt_id}/line-of-sight",
+        {"aX": a_x, "aY": a_y, "bX": b_x, "bY": b_y},
     )
 
 
@@ -61,7 +61,7 @@ def get_stats():
 
 def get_snapshots(hunt_id):
     """Lists grid snapshots for a hunt. Params: hunt_id. Returns: { huntId, snapshots }."""
-    return get("/snapshots", {"huntId": hunt_id})
+    return get(f"/hunt/{hunt_id}/snapshots")
 
 
 def post(path, body=None):

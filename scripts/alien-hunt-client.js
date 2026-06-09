@@ -17,27 +17,39 @@ async function startHunt(difficulty) {
 
 // Checks one direction with the motion tracker. Params: huntId, direction. Returns: { detected, state }.
 async function useMotionTracker(huntId, direction) {
-  return post("/motion-tracker", { huntId, direction });
+  return post(`/hunt/${encodeURIComponent(huntId)}/use-motion-tracker`, {
+    direction,
+  });
 }
 
 // Moves the player one step if possible. Params: huntId, direction. Returns: { playerPosition, state }.
 async function movePlayer(huntId, direction) {
-  return post("/move-player", { huntId, direction });
+  return post(`/hunt/${encodeURIComponent(huntId)}/move-player`, { direction });
 }
 
 // Shoots in one direction. Params: huntId, direction. Returns: { hit, state }.
 async function shoot(huntId, direction) {
-  return post("/shoot", { huntId, direction });
+  return post(`/hunt/${encodeURIComponent(huntId)}/shoot`, { direction });
 }
 
 // Finds a shortest path from A to B. Params: huntId, aX, aY, bX, bY. Returns: { path, state }.
 async function getShortestRoute(huntId, aX, aY, bX, bY) {
-  return get("/shortest-route", { huntId, aX, aY, bX, bY });
+  return get(`/hunt/${encodeURIComponent(huntId)}/shortest-route`, {
+    aX,
+    aY,
+    bX,
+    bY,
+  });
 }
 
 // Checks whether A can see B. Params: huntId, aX, aY, bX, bY. Returns: { lineOfSightClear, state }.
 async function getLineOfSight(huntId, aX, aY, bX, bY) {
-  return get("/line-of-sight", { huntId, aX, aY, bX, bY });
+  return get(`/hunt/${encodeURIComponent(huntId)}/line-of-sight`, {
+    aX,
+    aY,
+    bX,
+    bY,
+  });
 }
 
 // Lists persisted hunt stats. Params: none. Returns: { stats }.
@@ -47,7 +59,7 @@ async function getStats() {
 
 // Lists grid snapshots for a hunt. Params: huntId. Returns: { huntId, snapshots }.
 async function getSnapshots(huntId) {
-  return get("/snapshots", { huntId });
+  return get(`/hunt/${encodeURIComponent(huntId)}/snapshots`);
 }
 
 async function post(path, body) {

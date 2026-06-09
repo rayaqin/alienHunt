@@ -74,8 +74,8 @@ app.post("/start-hunt", (request, response) => {
   });
 });
 
-app.post("/motion-tracker", (request, response) => {
-  const { hunt, error } = getHuntFromBody(request.body);
+app.post("/hunt/:huntId/use-motion-tracker", (request, response) => {
+  const { hunt, error } = getHuntFromParams(request.params);
 
   if (error) {
     return response.status(error.status).json({ error: error.message });
@@ -98,7 +98,7 @@ app.post("/motion-tracker", (request, response) => {
     triggerAlienMovement(hunt, getMotionTrackerAlienMoveCount(hunt));
     recordSnapshot(
       hunt.huntId,
-      "motion-tracker",
+      "use-motion-tracker",
       request.body.direction,
       hunt.state,
       createGridSnapshot(hunt),
@@ -112,8 +112,8 @@ app.post("/motion-tracker", (request, response) => {
   });
 });
 
-app.post("/move-player", (request, response) => {
-  const { hunt, error } = getHuntFromBody(request.body);
+app.post("/hunt/:huntId/move-player", (request, response) => {
+  const { hunt, error } = getHuntFromParams(request.params);
 
   if (error) {
     return response.status(error.status).json({ error: error.message });
@@ -152,8 +152,8 @@ app.post("/move-player", (request, response) => {
   });
 });
 
-app.post("/shoot", (request, response) => {
-  const { hunt, error } = getHuntFromBody(request.body);
+app.post("/hunt/:huntId/shoot", (request, response) => {
+  const { hunt, error } = getHuntFromParams(request.params);
 
   if (error) {
     return response.status(error.status).json({ error: error.message });
@@ -192,8 +192,8 @@ app.post("/shoot", (request, response) => {
   });
 });
 
-app.get("/shortest-route", (request, response) => {
-  const { hunt, error } = getHuntFromQuery(request.query);
+app.get("/hunt/:huntId/shortest-route", (request, response) => {
+  const { hunt, error } = getHuntFromParams(request.params);
 
   if (error) {
     return response.status(error.status).json({ error: error.message });
@@ -211,8 +211,8 @@ app.get("/shortest-route", (request, response) => {
   });
 });
 
-app.get("/line-of-sight", (request, response) => {
-  const { hunt, error } = getHuntFromQuery(request.query);
+app.get("/hunt/:huntId/line-of-sight", (request, response) => {
+  const { hunt, error } = getHuntFromParams(request.params);
 
   if (error) {
     return response.status(error.status).json({ error: error.message });
@@ -236,12 +236,9 @@ app.get("/stats", (request, response) => {
   });
 });
 
-app.get("/snapshots", (request, response) => {
-  if (typeof request.query.huntId !== "string") {
-    return response.status(404).json({ error: "Valid huntId is required." });
-  }
-
-  const stats = getHuntStats(request.query.huntId);
+app.get("/hunt/:huntId/snapshots", (request, response) => {
+  const { huntId } = request.params;
+  const stats = getHuntStats(huntId);
 
   if (!stats) {
     return response.status(404).json({ error: "Hunt not found." });
@@ -250,25 +247,17 @@ app.get("/snapshots", (request, response) => {
   const revealAlien = stats.outcome !== null;
 
   return response.json({
-    huntId: request.query.huntId,
-    snapshots: listSnapshots(request.query.huntId, { revealAlien }),
+    huntId,
+    snapshots: listSnapshots(huntId, { revealAlien }),
   });
 });
 
-function getHuntFromBody(body) {
-  if (!body || typeof body.huntId !== "string") {
+function getHuntFromParams(params) {
+  if (typeof params.huntId !== "string") {
     return { error: { status: 404, message: "Valid huntId is required." } };
   }
 
-  return getHunt(body.huntId);
-}
-
-function getHuntFromQuery(query) {
-  if (typeof query.huntId !== "string") {
-    return { error: { status: 404, message: "Valid huntId is required." } };
-  }
-
-  return getHunt(query.huntId);
+  return getHunt(params.huntId);
 }
 
 function getHunt(huntId) {

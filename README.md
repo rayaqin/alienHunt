@@ -47,7 +47,7 @@ To play a hunt, you'll need to **call** certain **endpoints**.
 
 A locally running backend exposes the alien hunt API at `http://localhost:2014` _(if it is not running already, run the backend with `npm install` and `npm start`)_.
 
-Each hunt has its own `huntId`. The `POST /start-hunt` endpoint creates a new hunt and returns the `huntId`, as well as the map _(grid)_. Every other endpoint requires this `huntId`, either in the JSON request body for `POST` endpoints or as a query parameter for `GET` endpoints.
+Each hunt has its own `huntId`. The `POST /start-hunt` endpoint creates a new hunt and returns the `huntId`, as well as the map _(grid)_. Every other hunt-specific endpoint includes this `huntId` in the URL path.
 
 Hunt stats are persisted locally in `alien-hunt.sqlite`.
 
@@ -79,9 +79,9 @@ The `grid` matrix contains all blocks on the map. Boxes are marked with `"#"`, e
 
 <hr>
 
-### `POST /motion-tracker`
+### `POST /hunt/:huntId/use-motion-tracker`
 
-It accepts a JSON request body in the form `{ "huntId": string, "direction": "up" | "down" | "left" | "right" }`, and its response indicates whether the alien has been detected in that direction from the player's perspective. **The motion tracker ignores boxes in the way.**
+It accepts a JSON request body in the form `{ "direction": "up" | "down" | "left" | "right" }`, and its response indicates whether the alien has been detected in that direction from the player's perspective. **The motion tracker ignores boxes in the way.**
 
 Response:
 
@@ -94,11 +94,11 @@ Response:
 
 <hr>
 
-### `POST /move-player`
+### `POST /hunt/:huntId/move-player`
 
-It allows the player to move to an available adjacent block. It accepts a JSON request body in the form `{ "huntId": string, "direction": "up" | "down" | "left" | "right" }`, and returns the player's new position. If the player tries to move to an unavailable block _(wall or box)_, the endpoint returns the player's existing position.
+It allows the player to move to an available adjacent block. It accepts a JSON request body in the form `{ "direction": "up" | "down" | "left" | "right" }`, and returns the player's new position. If the player tries to move to an unavailable block _(wall or box)_, the endpoint returns the player's existing position.
 
-Calling `POST /move-player` also **always makes the alien move**.
+Calling `POST /hunt/:huntId/move-player` also **always makes the alien move**.
 
 - If it has no information about the player, it will search according to one of its randomly selected hunt strategies.
 - If there is a clear line of sight between the player and the alien, the alien will move towards the player instead. Upon losing line of sight, it will keep moving (once per move call) towards the block it saw the player last.
@@ -118,9 +118,9 @@ Response:
 
 <hr>
 
-### `POST /shoot`
+### `POST /hunt/:huntId/shoot`
 
-The `POST /shoot` endpoint accepts a JSON request body in the form `{ "huntId": string, "direction": "up" | "down" | "left" | "right" }` and returns whether the alien was hit. If the endpoint returns `hit: true`, the game ends with a victory. If the shot misses, the alien hears the shot and moves one step.
+The `POST /hunt/:huntId/shoot` endpoint accepts a JSON request body in the form `{ "direction": "up" | "down" | "left" | "right" }` and returns whether the alien was hit. If the endpoint returns `hit: true`, the game ends with a victory. If the shot misses, the alien hears the shot and moves one step.
 
 Response:
 
@@ -133,9 +133,9 @@ Response:
 
 <hr>
 
-### `GET /shortest-route`
+### `GET /hunt/:huntId/shortest-route`
 
-The `GET /shortest-route` endpoint accepts `huntId`, `aX`, `aY`, `bX`, and `bY` as query parameters, for example `/shortest-route?huntId=abc123&aX=10&aY=20&bX=30&bY=40`, and returns an array of direction strings. This is what the alien uses when it hears a missed shot.
+The `GET /hunt/:huntId/shortest-route` endpoint accepts `aX`, `aY`, `bX`, and `bY` as query parameters, for example `/hunt/abc123/shortest-route?aX=10&aY=20&bX=30&bY=40`, and returns an array of direction strings. This is what the alien uses when it hears a missed shot.
 
 Response:
 
@@ -148,9 +148,9 @@ Response:
 
 <hr>
 
-### `GET /line-of-sight`
+### `GET /hunt/:huntId/line-of-sight`
 
-The `GET /line-of-sight` endpoint accepts `huntId`, `aX`, `aY`, `bX`, and `bY` as query parameters, for example `/line-of-sight?huntId=abc123&aX=10&aY=20&bX=30&bY=40`, and its response indicates whether there is a clear line of sight from A to B, meaning there are no boxes in the way.
+The `GET /hunt/:huntId/line-of-sight` endpoint accepts `aX`, `aY`, `bX`, and `bY` as query parameters, for example `/hunt/abc123/line-of-sight?aX=10&aY=20&bX=30&bY=40`, and its response indicates whether there is a clear line of sight from A to B, meaning there are no boxes in the way.
 
 Response:
 
@@ -163,9 +163,9 @@ Response:
 
 <hr>
 
-### `GET /snapshots`
+### `GET /hunt/:huntId/snapshots`
 
-The `GET /snapshots` endpoint accepts `huntId` as a query parameter, for example `/snapshots?huntId=abc123`, and returns the persisted grid snapshots for that hunt. The backend creates one snapshot after each successful `POST /motion-tracker`, `POST /move-player`, or `POST /shoot` action. If the hunt has concluded, the snapshot grids reveal the alien with `"A"` on each snapshot. While the hunt is still active, the alien remains hidden.
+The `GET /hunt/:huntId/snapshots` endpoint returns the persisted grid snapshots for that hunt. The backend creates one snapshot after each successful `POST /hunt/:huntId/use-motion-tracker`, `POST /hunt/:huntId/move-player`, or `POST /hunt/:huntId/shoot` action. If the hunt has concluded, the snapshot grids reveal the alien with `"A"` on each snapshot. While the hunt is still active, the alien remains hidden.
 
 Response:
 
@@ -174,7 +174,7 @@ Response:
   huntId: string;
   snapshots: Array<{
     sequence: number;
-    action: "motion-tracker" | "move" | "shoot";
+    action: "use-motion-tracker" | "move" | "shoot";
     direction: "up" | "down" | "left" | "right";
     state: "active" | "victory" | "death";
     grid: Array<Array<"#" | "." | "P" | "A">>;
@@ -183,7 +183,7 @@ Response:
 }
 ```
 
-The replay UI highlights `motion-tracker` snapshots with a green line and `shoot` snapshots with a yellow line.
+The replay UI highlights `use-motion-tracker` snapshots with a green line and `shoot` snapshots with a yellow line.
 
 ## End of a hunt
 

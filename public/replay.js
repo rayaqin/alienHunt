@@ -106,7 +106,7 @@ async function loadReplay(huntId) {
 
   try {
     const response = await fetch(
-      `/snapshots?huntId=${encodeURIComponent(huntId)}`,
+      `/hunt/${encodeURIComponent(huntId)}/snapshots`,
     );
 
     if (!response.ok) {
@@ -193,7 +193,10 @@ function drawSnapshot(index) {
 }
 
 function drawActionOverlay(snapshot, cellSize) {
-  if (snapshot.action === "motion-tracker") {
+  if (
+    snapshot.action === "use-motion-tracker" ||
+    snapshot.action === "motion-tracker"
+  ) {
     drawMotionTrackerOverlay(snapshot.grid, snapshot.direction, cellSize);
     return;
   }
