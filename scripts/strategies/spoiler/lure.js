@@ -154,28 +154,35 @@ const moveToPositionWithTrackerChecks = async (
       sameDirectionMoves = 1;
     }
 
-    if (state !== "active" || sameDirectionMoves < 4) {
+    const shouldCheckBackwards = sameDirectionMoves % 2 === 0;
+    const shouldCheckForward = sameDirectionMoves % 6 === 0;
+
+    if (state !== "active" || (!shouldCheckBackwards && !shouldCheckForward)) {
       continue;
     }
 
-    sameDirectionMoves = 0;
-
-    const backwardsDirection = getOppositeDirection(direction);
-    const trackerBehindPlayerResult = await useMotionTracker(
-      huntId,
-      backwardsDirection,
-    );
-    state = trackerBehindPlayerResult.state;
-    logWithStep(
-      `used motion tracker ${backwardsDirection}; detected ${trackerBehindPlayerResult.detected}; state is ${state}`,
-    );
-
-    if (state === "active" && trackerBehindPlayerResult.detected) {
-      const shootResult = await shoot(huntId, backwardsDirection);
-      state = shootResult.state;
-      logWithStep(
-        `shot ${backwardsDirection}; hit ${shootResult.hit}; state is ${state}`,
+    if (shouldCheckBackwards) {
+      const backwardsDirection = getOppositeDirection(direction);
+      const trackerBehindPlayerResult = await useMotionTracker(
+        huntId,
+        backwardsDirection,
       );
+      state = trackerBehindPlayerResult.state;
+      logWithStep(
+        `used motion tracker ${backwardsDirection}; detected ${trackerBehindPlayerResult.detected}; state is ${state}`,
+      );
+
+      if (state === "active" && trackerBehindPlayerResult.detected) {
+        const shootResult = await shoot(huntId, backwardsDirection);
+        state = shootResult.state;
+        logWithStep(
+          `shot ${backwardsDirection}; hit ${shootResult.hit}; state is ${state}`,
+        );
+      }
+    }
+
+    if (state !== "active" || !shouldCheckForward) {
+      continue;
     }
 
     const trackerInFrontOfPlayerResult = await useMotionTracker(
@@ -201,8 +208,66 @@ const moveToPositionWithTrackerChecks = async (
 
 const findHidingPlace = (hunt) => {
   const { grid } = hunt;
+  const playerStart = findPlayerStart(grid);
+  const minHidingPlaceDistance = 25;
 
   const isAvailable = (x, y) => grid[y]?.[x] === "." || grid[y]?.[x] === "P";
+  const getPositionKey = (position) => `${position.x},${position.y}`;
+  const getNextPosition = (position, direction) => {
+    const delta = DELTAS[direction];
+
+    return {
+      x: position.x + delta.x,
+      y: position.y + delta.y,
+    };
+  };
+  const getShortestDistancesFromStart = () => {
+    const startKey = getPositionKey(playerStart);
+    const distances = new Map([[startKey, 0]]);
+    const queue = [playerStart];
+
+    for (let index = 0; index < queue.length; index++) {
+      const current = queue[index];
+      const currentDistance = distances.get(getPositionKey(current));
+
+      for (const direction of DIRECTIONS) {
+        const next = getNextPosition(current, direction);
+        const nextKey = getPositionKey(next);
+
+        if (!isAvailable(next.x, next.y) || distances.has(nextKey)) {
+          continue;
+        }
+
+        distances.set(nextKey, currentDistance + 1);
+        queue.push(next);
+      }
+    }
+
+    return distances;
+  };
+  const distancesFromPlayerStart = getShortestDistancesFromStart();
+  const getDistanceFromPlayerStart = (x, y) =>
+    distancesFromPlayerStart.get(getPositionKey({ x, y })) ?? Infinity;
+  const isLineOnShortestPathToPlayerStart = (x, y, direction) => {
+    const hidingPlaceDistance = getDistanceFromPlayerStart(x, y);
+    const firstBlock = getNextPosition({ x, y }, direction);
+    const secondBlock = getNextPosition(firstBlock, direction);
+    const firstBlockDistance = getDistanceFromPlayerStart(
+      firstBlock.x,
+      firstBlock.y,
+    );
+    const secondBlockDistance = getDistanceFromPlayerStart(
+      secondBlock.x,
+      secondBlock.y,
+    );
+
+    return (
+      isAvailable(firstBlock.x, firstBlock.y) &&
+      isAvailable(secondBlock.x, secondBlock.y) &&
+      firstBlockDistance === hidingPlaceDistance - 1 &&
+      secondBlockDistance === firstBlockDistance - 1
+    );
+  };
   const countFreeBlocks = (x, y, direction) => {
     const { x: dx, y: dy } = DELTAS[direction];
     let count = 0;
@@ -227,6 +292,7 @@ const findHidingPlace = (hunt) => {
 
   let bestHidingPlace = null;
   let bestAvailableNeighbours = Infinity;
+  let bestDistanceFromPlayerStart = Infinity;
   let bestFreeBlocksCount = 0;
 
   for (let y = 0; y < grid.length; y++) {
@@ -247,21 +313,35 @@ const findHidingPlace = (hunt) => {
         continue;
       }
 
+      const playerFacingFreeBlocksByDirection = freeBlocksByDirection.filter(
+        ({ direction }) => isLineOnShortestPathToPlayerStart(x, y, direction),
+      );
       const { direction: freeBlocksDirection, count: freeBlocksCount } =
-        freeBlocksByDirection.reduce((best, current) =>
-          current.count > best.count ? current : best,
+        playerFacingFreeBlocksByDirection.reduce(
+          (best, current) => (current.count > best.count ? current : best),
+          { direction: undefined, count: 0 },
         );
 
       if (freeBlocksCount < 2) {
         continue;
       }
 
-      const hasFewerNeighbours = availableNeighbours < bestAvailableNeighbours;
+      const distanceFromPlayerStart = getDistanceFromPlayerStart(x, y);
+      if (distanceFromPlayerStart < minHidingPlaceDistance) {
+        continue;
+      }
+
+      const isCloserToPlayerStart =
+        distanceFromPlayerStart < bestDistanceFromPlayerStart;
+      const hasFewerNeighbours =
+        distanceFromPlayerStart === bestDistanceFromPlayerStart &&
+        availableNeighbours < bestAvailableNeighbours;
       const hasLongerLine =
+        distanceFromPlayerStart === bestDistanceFromPlayerStart &&
         availableNeighbours === bestAvailableNeighbours &&
         freeBlocksCount > bestFreeBlocksCount;
 
-      if (hasFewerNeighbours || hasLongerLine) {
+      if (isCloserToPlayerStart || hasFewerNeighbours || hasLongerLine) {
         bestHidingPlace = {
           hidingPlace: { x, y },
           freeBlocksDirection,
@@ -273,6 +353,7 @@ const findHidingPlace = (hunt) => {
           ),
         };
         bestAvailableNeighbours = availableNeighbours;
+        bestDistanceFromPlayerStart = distanceFromPlayerStart;
         bestFreeBlocksCount = freeBlocksCount;
       }
     }
@@ -295,6 +376,18 @@ const shootingStratFallback = async (hunt) => {
 };
 
 const isSameBlock = (a, b) => a.x === b.x && a.y === b.y;
+
+const findPlayerStart = (grid) => {
+  for (let y = 0; y < grid.length; y++) {
+    for (let x = 0; x < grid[y].length; x++) {
+      if (grid[y][x] === "P") {
+        return { x, y };
+      }
+    }
+  }
+
+  return { x: 50, y: 50 };
+};
 
 const getOppositeDirection = (direction) => {
   if (direction === "up") {
