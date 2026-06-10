@@ -58,7 +58,7 @@ function renderRows(hunts) {
     const row = document.createElement("tr");
     const cell = document.createElement("td");
     cell.className = "empty";
-    cell.colSpan = 10;
+    cell.colSpan = 9;
     cell.textContent = "Start a hunt to populate this table.";
     row.append(cell);
     historyRows.append(row);
@@ -80,7 +80,6 @@ function createHistoryRow(hunt) {
     createTextCell(formatNumber(hunt.moves)),
     createTextCell(formatNumber(hunt.shots)),
     createTextCell(formatNumber(hunt.motionTrackerUses)),
-    createTextCell(formatDuration(hunt.startedAt, hunt.endedAt)),
     createTextCell(formatDate(hunt.startedAt)),
     createReplayCell(hunt),
   );
@@ -197,27 +196,4 @@ function formatDate(value) {
   }).format(date);
 
   return `${month} ${day} ${time}`;
-}
-
-function formatDuration(startedAt, endedAt) {
-  if (!startedAt || !endedAt) {
-    return "Unfinished";
-  }
-
-  const durationMs =
-    new Date(endedAt).getTime() - new Date(startedAt).getTime();
-
-  if (!Number.isFinite(durationMs) || durationMs < 0) {
-    return "Unknown";
-  }
-
-  const totalSeconds = Math.round(durationMs / 1000);
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-
-  if (minutes === 0) {
-    return `${seconds}s`;
-  }
-
-  return `${minutes}m ${seconds}s`;
 }

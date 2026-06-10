@@ -2,7 +2,7 @@ const {
   movePlayer,
   startHunt,
   getShortestRoute,
-} = require("./alien-hunt-client");
+} = require("../alien-hunt-client");
 
 async function main() {
   const hunt = await startHunt();

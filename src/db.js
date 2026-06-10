@@ -77,7 +77,6 @@ const getAllStats = db.prepare(`
   SELECT
     hunt_id AS huntId,
     started_at AS startedAt,
-    ended_at AS endedAt,
     outcome,
     search_strategy AS searchStrategy,
     difficulty,
@@ -92,7 +91,6 @@ const getStatsForHunt = db.prepare(`
   SELECT
     hunt_id AS huntId,
     started_at AS startedAt,
-    ended_at AS endedAt,
     outcome,
     search_strategy AS searchStrategy,
     difficulty,

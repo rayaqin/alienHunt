@@ -1,4 +1,7 @@
 import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from alien_hunt_client import get_shortest_route, move_player, start_hunt
 

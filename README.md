@@ -22,16 +22,16 @@
 
 <hr>
 
-To make the start easier, example strategies are available in the scripts folder in both JS and Python.
+To make the start easier, example strategies are available in the `scripts/strategies` folder in both JS and Python.
 
 You can try them from the root folder by using the following commands:
 
-- `node scripts/circle-runner.js`
-- `python3 scripts/circle_runner.py`
-- `node scripts/corner-runner.js`
-- `python3 scripts/corner_runner.py`
-- `node scripts/mindless-shooter.js`
-- `python3 scripts/mindless_shooter.py`
+- `node scripts/strategies/circle-runner.js`
+- `python3 scripts/strategies/circle_runner.py`
+- `node scripts/strategies/corner-runner.js`
+- `python3 scripts/strategies/corner_runner.py`
+- `node scripts/strategies/mindless-shooter.js`
+- `python3 scripts/strategies/mindless_shooter.py`
 
 **Circle runner** moves the player in a circle _(square, actually)_, and keeps going until the alien catches and brutally murders the player.
 
