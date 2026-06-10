@@ -17,6 +17,7 @@ async function startHunt(difficulty) {
 
 // Checks one direction with the motion tracker. Params: huntId, direction. Returns: { detected, state }.
 async function useMotionTracker(huntId, direction) {
+  assertHuntId(huntId, "useMotionTracker");
   return post(`/hunt/${encodeURIComponent(huntId)}/use-motion-tracker`, {
     direction,
   });
@@ -24,16 +25,19 @@ async function useMotionTracker(huntId, direction) {
 
 // Moves the player one step if possible. Params: huntId, direction. Returns: { playerPosition, state }.
 async function movePlayer(huntId, direction) {
+  assertHuntId(huntId, "movePlayer");
   return post(`/hunt/${encodeURIComponent(huntId)}/move-player`, { direction });
 }
 
 // Shoots in one direction. Params: huntId, direction. Returns: { hit, state }.
 async function shoot(huntId, direction) {
+  assertHuntId(huntId, "shoot");
   return post(`/hunt/${encodeURIComponent(huntId)}/shoot`, { direction });
 }
 
 // Finds a shortest path from A to B. Params: huntId, aX, aY, bX, bY. Returns: { path, state }.
 async function getShortestRoute(huntId, aX, aY, bX, bY) {
+  assertHuntId(huntId, "getShortestRoute");
   return get(`/hunt/${encodeURIComponent(huntId)}/shortest-route`, {
     aX,
     aY,
@@ -44,6 +48,7 @@ async function getShortestRoute(huntId, aX, aY, bX, bY) {
 
 // Checks whether A can see B. Params: huntId, aX, aY, bX, bY. Returns: { lineOfSightClear, state }.
 async function getLineOfSight(huntId, aX, aY, bX, bY) {
+  assertHuntId(huntId, "getLineOfSight");
   return get(`/hunt/${encodeURIComponent(huntId)}/line-of-sight`, {
     aX,
     aY,
@@ -59,7 +64,14 @@ async function getStats() {
 
 // Lists grid snapshots for a hunt. Params: huntId. Returns: { huntId, snapshots }.
 async function getSnapshots(huntId) {
+  assertHuntId(huntId, "getSnapshots");
   return get(`/hunt/${encodeURIComponent(huntId)}/snapshots`);
+}
+
+function assertHuntId(huntId, caller) {
+  if (typeof huntId !== "string") {
+    throw new TypeError(`${caller} expected huntId to be a string`);
+  }
 }
 
 async function post(path, body) {

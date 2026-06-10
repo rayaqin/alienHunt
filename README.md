@@ -10,13 +10,13 @@
 
 - You can move to 1 adjacent block at a time. Every time you move, the alien moves as well.
 
-- You have a powerful blaster gun that disintegrates any creature it hits, but it's rays are blocked by boxes. If you manage to **shoot the alien**, it dies, and your hunt ends with **victory**. Whenever you **miss a shot**, the alien selects the block **you shot from** as it's new destination _(unless your are in it's line of sight)_, and moves **1 block closer**.
+- You have a powerful blaster gun that disintegrates any creature it hits, but it's rays are blocked by boxes. If you manage to **shoot the alien**, it dies, and your hunt ends with **victory**. Whenever you **miss a shot**, the alien selects the block **you shot from** as it's new destination, and moves **1 block closer**.
 
 - If you survive after the **alien** has **moved** 10000 times, it loses interest and leaves through a vent, and your hunt ends with **victory**.
 
 - All actions _(vision, movement, shooting)_ happen either horizontally or vertically, **no diagonals**. So the possible directions are always `'up'|'down'|'left'|'right'`.
 
-- The alien has darkvision, you do not. You have a motion tracker though that shows whether the alien is present in a certain direction, even if it is behind several boxes.
+- You have a motion tracker though that shows whether the alien is present in a certain direction, even if it is behind several boxes. This is your only way to detect the alien before shooting it.
 
 <br/>
 
@@ -60,7 +60,7 @@ Completed hunts can be replayed at `http://localhost:2014/replay` by entering th
 Starts a new hunt, puts the alien at a random available block that is at least 2 blocks away from the player, and sets the player's starting position as the alien's target destination. This endpoint accepts an optional JSON request body in the form `{ "difficulty": "easy" | "medium" | "hard" }`. If no difficulty is provided, the hunt starts on `easy`. **The docs describe the alien's behaviour on `easy` difficulty.**
 
 - `easy`: the alien is at a big disadvantage
-- `medium`: a clever strategy is needed
+- `medium`: a clever strategy is needed to reliably survive
 - `hard`: survival without luck is a truly impressive feat
 
 Response:
@@ -100,7 +100,7 @@ It allows the player to move to an available adjacent block. It accepts a JSON r
 
 Calling `POST /hunt/:huntId/move-player` also **always makes the alien move**.
 
-- If it has no information about the player, it will search according to one of its randomly selected hunt strategies.
+- If the alien has no information about the player, it will search according to one of its randomly selected hunt strategies.
 - If there is a clear line of sight between the player and the alien, the alien will move towards the player instead. Upon losing line of sight, it will keep moving (once per move call) towards the block it saw the player last.
 - If the player **shoots** and misses, the alien will calculate the shortest path from it's own position to the place the player **shot from**, and _(unless it sees the player or hears another shot)_ it will **keep moving** on that path. After reaching its destination it will start using its selected search strategy again. **This same mechanism is also triggered at the start of the hunt, when the player falls down.**
 
@@ -120,7 +120,7 @@ Response:
 
 ### `POST /hunt/:huntId/shoot`
 
-The `POST /hunt/:huntId/shoot` endpoint accepts a JSON request body in the form `{ "direction": "up" | "down" | "left" | "right" }` and returns whether the alien was hit. If the endpoint returns `hit: true`, the game ends with a victory. If the shot misses, the alien hears the shot and moves one step.
+The `POST /hunt/:huntId/shoot` endpoint accepts a JSON request body in the form `{ "direction": "up" | "down" | "left" | "right" }` and returns whether the alien was hit. If the endpoint returns `hit: true`, the game ends with a victory. If the shot misses, the alien hears the shot and moves one step towards the player.
 
 Response:
 
