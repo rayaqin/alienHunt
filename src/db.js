@@ -22,6 +22,15 @@ db.exec(`
 
 ensureColumn("hunt_stats", "search_strategy", "TEXT");
 ensureColumn("hunt_stats", "difficulty", "TEXT");
+ensureColumn("hunt_stats", "player_moves", "INTEGER NOT NULL DEFAULT 0");
+ensureColumn("hunt_stats", "alien_moves", "INTEGER NOT NULL DEFAULT 0");
+
+db.exec(`
+  UPDATE hunt_stats
+  SET player_moves = moves
+  WHERE player_moves = 0
+    AND moves > 0
+`);
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS hunt_snapshots (
@@ -47,9 +56,16 @@ const insertHunt = db.prepare(`
   VALUES (@huntId, @startedAt, @searchStrategy, @difficulty)
 `);
 
-const incrementMoves = db.prepare(`
+const incrementPlayerMoves = db.prepare(`
   UPDATE hunt_stats
-  SET moves = moves + 1
+  SET moves = moves + 1,
+      player_moves = player_moves + 1
+  WHERE hunt_id = ?
+`);
+
+const incrementAlienMoves = db.prepare(`
+  UPDATE hunt_stats
+  SET alien_moves = alien_moves + ?
   WHERE hunt_id = ?
 `);
 
@@ -81,6 +97,8 @@ const getAllStats = db.prepare(`
     search_strategy AS searchStrategy,
     difficulty,
     moves,
+    player_moves AS playerMoves,
+    alien_moves AS alienMoves,
     shots,
     motion_tracker_uses AS motionTrackerUses
   FROM hunt_stats
@@ -95,6 +113,8 @@ const getStatsForHunt = db.prepare(`
     search_strategy AS searchStrategy,
     difficulty,
     moves,
+    player_moves AS playerMoves,
+    alien_moves AS alienMoves,
     shots,
     motion_tracker_uses AS motionTrackerUses
   FROM hunt_stats
@@ -149,7 +169,13 @@ function createStats(huntId, searchStrategy = null, difficulty = null) {
 }
 
 function recordMove(huntId) {
-  incrementMoves.run(huntId);
+  incrementPlayerMoves.run(huntId);
+}
+
+function recordAlienMoves(huntId, count) {
+  if (count > 0) {
+    incrementAlienMoves.run(count, huntId);
+  }
 }
 
 function recordShot(huntId) {
@@ -225,6 +251,7 @@ module.exports = {
   listSnapshots,
   listStats,
   recordFinishedHunt,
+  recordAlienMoves,
   recordMotionTrackerUse,
   recordMove,
   recordShot,

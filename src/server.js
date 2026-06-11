@@ -5,6 +5,7 @@ const {
   getHuntStats,
   listSnapshots,
   listStats,
+  recordAlienMoves,
   recordFinishedHunt,
   recordMotionTrackerUse,
   recordMove,
@@ -94,8 +95,10 @@ app.post("/hunt/:huntId/use-motion-tracker", (request, response) => {
 
   if (hunt.state === "active") {
     const previousState = hunt.state;
+    const previousAlienMoves = hunt.alienMoves;
     recordMotionTrackerUse(hunt.huntId);
     triggerAlienMovement(hunt, getMotionTrackerAlienMoveCount(hunt));
+    recordAlienMoveDelta(hunt, previousAlienMoves);
     recordSnapshot(
       hunt.huntId,
       "use-motion-tracker",
@@ -133,10 +136,12 @@ app.post("/hunt/:huntId/move-player", (request, response) => {
   }
 
   const previousState = hunt.state;
+  const previousAlienMoves = hunt.alienMoves;
   recordMove(hunt.huntId);
   const playerPosition = movePlayer(hunt, request.body.direction, {
     alienMoveCount: getAlienMoveCount(hunt),
   });
+  recordAlienMoveDelta(hunt, previousAlienMoves);
   recordSnapshot(
     hunt.huntId,
     "move",
@@ -173,10 +178,12 @@ app.post("/hunt/:huntId/shoot", (request, response) => {
   }
 
   const previousState = hunt.state;
+  const previousAlienMoves = hunt.alienMoves;
   recordShot(hunt.huntId);
   const hit = shoot(hunt, request.body.direction, {
     alienMoveCount: getAlienMoveCount(hunt),
   });
+  recordAlienMoveDelta(hunt, previousAlienMoves);
   recordSnapshot(
     hunt.huntId,
     "shoot",
@@ -322,6 +329,10 @@ function recordFinishedIfNeeded(hunt, previousState) {
     recordFinishedHunt(hunt.huntId, hunt.state);
     console.log(`Hunt completed: huntId=${hunt.huntId} outcome=${hunt.state}`);
   }
+}
+
+function recordAlienMoveDelta(hunt, previousAlienMoves) {
+  recordAlienMoves(hunt.huntId, hunt.alienMoves - previousAlienMoves);
 }
 
 if (require.main === module) {

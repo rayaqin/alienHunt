@@ -36,7 +36,7 @@ function renderSummary(hunts) {
   const victories = hunts.filter((hunt) => hunt.outcome === "victory");
   const deaths = hunts.filter((hunt) => hunt.outcome === "death");
   const active = hunts.length - completed.length;
-  const totalMoves = sum(hunts, "moves");
+  const totalPlayerMoves = sum(hunts, "playerMoves");
   const totalShots = sum(hunts, "shots");
   const totalTrackerUses = sum(hunts, "motionTrackerUses");
 
@@ -46,7 +46,10 @@ function renderSummary(hunts) {
     createSummaryCard("Deaths", deaths.length),
     createSummaryCard(
       "Avg Actions",
-      formatAverage(totalMoves + totalShots + totalTrackerUses, hunts.length),
+      formatAverage(
+        totalPlayerMoves + totalShots + totalTrackerUses,
+        hunts.length,
+      ),
     ),
   );
 }
@@ -58,7 +61,7 @@ function renderRows(hunts) {
     const row = document.createElement("tr");
     const cell = document.createElement("td");
     cell.className = "empty";
-    cell.colSpan = 9;
+    cell.colSpan = 10;
     cell.textContent = "Start a hunt to populate this table.";
     row.append(cell);
     historyRows.append(row);
@@ -77,7 +80,8 @@ function createHistoryRow(hunt) {
     createBadgeCell(hunt.outcome),
     createTextCell(formatDifficulty(hunt.difficulty)),
     createTextCell(formatStrategy(hunt.searchStrategy)),
-    createTextCell(formatNumber(hunt.moves)),
+    createTextCell(formatNumber(hunt.playerMoves)),
+    createTextCell(formatNumber(hunt.alienMoves)),
     createTextCell(formatNumber(hunt.shots)),
     createTextCell(formatNumber(hunt.motionTrackerUses)),
     createTextCell(formatDate(hunt.startedAt)),

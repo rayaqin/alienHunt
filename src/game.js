@@ -264,7 +264,7 @@ function moveAlienToward(hunt, target) {
     return;
   }
 
-  hunt.alienPosition = getNextPosition(hunt.alienPosition, route[0]);
+  moveAlienOneStep(hunt, route[0]);
 }
 
 function moveAlienRandomly(hunt) {
@@ -278,7 +278,15 @@ function moveAlienRandomly(hunt) {
 
   const direction =
     availableDirections[Math.floor(Math.random() * availableDirections.length)];
+  moveAlienOneStep(hunt, direction);
+}
+
+function moveAlienOneStep(hunt, direction) {
   hunt.alienPosition = getNextPosition(hunt.alienPosition, direction);
+
+  if (hasLineOfSight(hunt, hunt.alienPosition, hunt.playerPosition)) {
+    hunt.alienTarget = { ...hunt.playerPosition };
+  }
 }
 
 function searchForPlayer(hunt) {
@@ -319,7 +327,7 @@ function moveAlienWithCornerSearch(hunt) {
     return;
   }
 
-  hunt.alienPosition = getNextPosition(hunt.alienPosition, route[0]);
+  moveAlienOneStep(hunt, route[0]);
 }
 
 function getNextCornerSearchTarget(hunt) {
@@ -349,7 +357,7 @@ function moveAlienWithSweep(hunt, orientation) {
   );
 
   if (route.length > 0) {
-    hunt.alienPosition = getNextPosition(hunt.alienPosition, route[0]);
+    moveAlienOneStep(hunt, route[0]);
     return;
   }
 
