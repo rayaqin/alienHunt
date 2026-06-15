@@ -18,7 +18,7 @@
 
 - All actions _(vision, movement, shooting)_ happen either horizontally or vertically, **no diagonals**. So the possible directions are always `'up'|'down'|'left'|'right'`.
 
-- You have a motion tracker though that shows whether the alien is present in a certain direction, even if it is behind several boxes. This is your only way to detect the alien before shooting it.
+- You have a **motion tracker** that shows whether the alien is present in a certain direction, even if it is behind several boxes. This is your **only way to detect the alien** before shooting it.
 
 <br/>
 
