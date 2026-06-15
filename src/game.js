@@ -570,7 +570,7 @@ function getRandomOpenPosition(boxSet) {
 
     if (
       isAvailable(position, boxSet) &&
-      getDistance(position, PLAYER_START) >= 2
+      getDistance(position, PLAYER_START) >= 4
     ) {
       return position;
     }

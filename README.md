@@ -6,6 +6,8 @@
 
 - The map is a `100x100` grid with 500 boxes that block both movement, vision and gunfire. You are at the `50,50` position, and you have the map of the area _(so you know where all the boxes are)_.
 
+- The **alien** starts on a **random** available block that is **at least 4 blocks away** from your starting position.
+
 - If the alien and you are ever on the same block _(square/space)_, the alien kills you instantly, and your hunt _(game session)_ ends with **defeat**.
 
 - You can move to 1 adjacent block at a time. Every time you move, the alien moves as well.
@@ -22,9 +24,17 @@
 
 <hr>
 
-To make the start easier, example strategies are available in the `scripts/strategies` folder in both JS and Python.
+### To play a hunt, you'll need to **call** certain **endpoints**. Through them, you can get data about a hunt and perform actions.
 
-You can try them from the root folder by using the following commands:
+The actions you can perform on an active hunt are:
+
+- use motion tracker | `POST /hunt/:huntId/use-motion-tracker`
+- move player | `POST /hunt/:huntId/move-player`
+- shoot | `POST /hunt/:huntId/shoot`
+
+To make the start easier, example strategies are available in the `scripts/strategies` folder in both JS and Python. It is recommended to start by modifying one of these.
+
+You can try them from the root folder by running the following commands in terminal:
 
 - `node scripts/strategies/circle-runner.js`
 - `python3 scripts/strategies/circle_runner.py`
@@ -33,19 +43,17 @@ You can try them from the root folder by using the following commands:
 - `node scripts/strategies/mindless-shooter.js`
 - `python3 scripts/strategies/mindless_shooter.py`
 
-**Circle runner** moves the player in a circle _(square, actually)_, and keeps going until the alien catches and brutally murders the player.
+**Circle runner**: moves the player in a circle _(square, actually)_, and keeps going until the alien catches and brutally murders the player.
 
-**Corner runner** finds the shortest path to the bottom right corner, and awaits certain death there.
+**Corner runner**: finds the shortest path to the bottom right corner, and awaits certain death there.
 
-**Mindless shooter** stands still and shoots clockwise until the hunt ends.
+**Mindless shooter**: stands still and shoots clockwise until the hunt ends _(which turned out to be a surprisingly effective strategy considering how simple it is)_.
 
 <hr>
 
 ## The API
 
-To play a hunt, you'll need to **call** certain **endpoints**.
-
-A locally running backend exposes the alien hunt API at `http://localhost:2014` _(if it is not running already, run the backend with `npm install` and `npm start`)_.
+A locally running backend exposes the alien hunt API at `http://localhost:2014` _(if it is not running already, run the backend with `npm install` and `npm start`)_. This API allows you to interact with a hunt, get data, perform actions.
 
 Each hunt has its own `huntId`. The `POST /start-hunt` endpoint creates a new hunt and returns the `huntId`, as well as the map _(grid)_. Every other hunt-specific endpoint includes this `huntId` in the URL path.
 
@@ -160,6 +168,8 @@ Response:
   state: "active" | "victory" | "death";
 }
 ```
+
+You could of course write this yourself and avoid the backend call, but most strategies won't require this anyway.
 
 <hr>
 
