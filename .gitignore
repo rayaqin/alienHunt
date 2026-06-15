@@ -9,3 +9,5 @@ __pycache__/
 .env.*
 /scripts/spoiler/*
 /scripts/strategies/spoiler/*
+/scripts/sim/maps*.json
+.claude/

@@ -206,3 +206,63 @@ Calling any endpoint other than `POST /start-hunt` without a valid `huntId` shou
 The backend records the selected difficulty, alien search strategy, number of moves, shots, and motion tracker uses for each hunt. It also persists a grid snapshot after each move or shot. When a hunt ends, the final outcome is saved as either `victory` or `death`.
 
 The `GET /stats` endpoint returns the persisted hunt stats.
+
+## Extra: Testing a solution efficiently with the local simulator
+
+Running many hunts against the HTTP API is slow: every `POST /start-hunt` generates a fresh map _(a connectivity check runs per box)_, so a 1000-game pass over the network can take half an hour. To iterate fast, there is a **local simulator** under `scripts/sim/` that reuses the real `src/game.js`, so the alien behaves **exactly** as it does on the live server, but everything runs in-process. Thousands of games complete in seconds.
+
+It is only a test harness standing in for the server. Your strategy still sees **only** what the real API returns _(the map up front, plus the result of each tracker/move/shoot call)_.
+
+### 1. Generate a cached pool of maps _(once)_
+
+Map generation is the bottleneck, so it is done once and cached to disk (the files are gitignored):
+
+```
+node scripts/sim/gen-maps.js 1000           # writes scripts/sim/maps.json
+node scripts/sim/gen-maps.js 250 maps-small.json   # a smaller pool for quick checks
+```
+
+### 2. Write a strategy in the simulator's format
+
+A simulator strategy is a module that exports an `async` function receiving a `client`. Drop it in `scripts/sim/strategies/`. The `client` mirrors the API _(methods can be `await`ed)_:
+
+```js
+// scripts/sim/strategies/my-strategy.js
+module.exports = async function myStrategy(client) {
+  client.grid; // the map matrix ("#", ".", "P"), known up front
+  client.boxes; // box coordinates
+  client.playerPosition; // { x, y } (a copy)
+  client.state; // "active" | "victory" | "death"
+
+  while (client.state === "active") {
+    const { detected } = await client.useMotionTracker("left"); // { detected, state }
+    if (detected)
+      await client.shoot("left"); // { hit, state }
+    else await client.movePlayer("right"); // { playerPosition, state }
+  }
+};
+```
+
+The same function shape works in the simulator and can be adapted to an HTTP script later. See `pattern-shooter.js`, `cross-shooter.js`, and `lock-shooter.js` in that folder for examples.
+
+### 3. Benchmark it over the pool
+
+```
+node scripts/sim/benchmark.js scripts/sim/strategies/my-strategy.js 1000
+```
+
+It reports the win rate, how many wins came from the 10000-move timeout, and the average actions per game. Pass a smaller run count for a quick check, and use the `MAPS` env var to pick a pool:
+
+```
+MAPS=scripts/sim/maps-small.json node scripts/sim/benchmark.js scripts/sim/strategies/my-strategy.js 250
+```
+
+Every run uses a fixed seed per map index, so **all strategies see the identical set of games** — comparisons are fair, and tweaks show up as real signal rather than luck.
+
+### 4. Validate the winner against the live server
+
+The simulator matches the server, but always confirm the final strategy over the real API (this is the official number). Write the strategy as an HTTP script in `scripts/strategies/` (print a `Started hunt <huntId>` line so it can be tracked), then:
+
+```
+node scripts/test-success-rate.js scripts/strategies/my-strategy.js 100
+```
