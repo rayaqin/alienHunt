@@ -12,7 +12,7 @@
 
 - You can move to 1 adjacent block at a time. Every time you move, the alien moves as well.
 
-- You have a powerful blaster gun that disintegrates any creature it hits, but it's rays are blocked by boxes. If you manage to **shoot the alien**, it dies, and your hunt ends with **victory**. Whenever you **miss a shot**, the alien selects the block **you shot from** as it's new destination, and moves **1 block closer**.
+- You have a powerful blaster gun that disintegrates any creature it hits, but it's rays are blocked by boxes. If you manage to **shoot the alien**, it dies, and your hunt ends with **victory**. Whenever you **miss a shot**, the alien selects the block **you shot from** as it's new destination, and **moves closer**.
 
 - If you survive after the **alien** has **moved** 10000 times, it loses interest and leaves through a vent, and your hunt ends with **victory**.
 
