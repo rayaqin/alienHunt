@@ -4,7 +4,7 @@
 
 - A Xenomorph _(a deadly alien predator)_ heard your fall and is now coming to investigate the source of the sound.
 
-- The map is a `100x100` grid with 500 boxes that block both movement, vision and gunfire. You are at the `50,50` position, and you have the map of the area _(so you know where all the boxes are)_.
+- The map is a `100x100` grid, with 10000 squares. There are 500 randomly placed boxes that block both movement, vision and gunfire. You are at the `50,50` position, and you have the map of the area _(so you know where all the boxes are)_.
 
 - The **alien** starts on a **random** available block that is **at least 4 blocks away** from your starting position.
 
